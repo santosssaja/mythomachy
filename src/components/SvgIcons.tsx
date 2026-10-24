@@ -58,6 +58,38 @@ export const IconTemple: React.FC<IconProps> = ({ className, size = 20, color = 
   </svg>
 );
 
+export const IconWallet: React.FC<IconProps> = ({ className, size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" />
+    <path d="M16 3H4a2 2 0 0 0-2 2v2h18V5a2 2 0 0 0-2-2z" />
+    <circle cx="16" cy="14" r="1.5" fill={color} />
+  </svg>
+);
+
+export const IconMetaMask: React.FC<IconProps> = ({ className, size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" className={className}>
+    <path d="M29.5 2.5L18.2 10.9L20.3 5.9L29.5 2.5Z" fill="#E2761B" stroke="#E2761B" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M2.5 2.5L11.7 10.9L9.7 5.9L2.5 2.5Z" fill="#E4751F" stroke="#E4751F" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M25.3 22.8L22.3 27.4L28.7 29.2L30.2 22.9L25.3 22.8Z" fill="#E4751F" stroke="#E4751F" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M1.8 22.9L3.3 29.2L9.7 27.4L6.7 22.8L1.8 22.9Z" fill="#E4751F" stroke="#E4751F" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9.4 14.1L7.5 16.9L13.8 17.3L13.6 10.5L9.4 14.1Z" fill="#E4751F" stroke="#E4751F" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M22.6 14.1L18.3 10.4L18.2 17.3L24.5 16.9L22.6 14.1Z" fill="#E4751F" stroke="#E4751F" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9.7 27.4L13.4 25.5L10.2 22.9L9.7 27.4Z" fill="#E4751F" stroke="#E4751F" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M18.6 25.5L22.3 27.4L21.8 22.9L18.6 25.5Z" fill="#E4751F" stroke="#E4751F" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M22.3 27.4L18.6 25.5L18.7 28.2L18.7 29.4L22.3 27.4Z" fill="#D7C1B3" stroke="#D7C1B3" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9.7 27.4L13.3 29.4L13.3 28.2L13.4 25.5L9.7 27.4Z" fill="#D7C1B3" stroke="#D7C1B3" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M13.4 20.6L9.9 19.6L12.5 18.5L13.4 20.6Z" fill="#233447" stroke="#233447" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M18.6 20.6L19.5 18.5L22.1 19.6L18.6 20.6Z" fill="#233447" stroke="#233447" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M9.7 27.4L10.3 22.9L6.7 22.8L9.7 27.4Z" fill="#CD6116" stroke="#CD6116" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M21.7 22.9L22.3 27.4L25.3 22.8L21.7 22.9Z" fill="#CD6116" stroke="#CD6116" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M24.5 16.9L18.2 17.3L18.6 20.6L22.1 19.6L25.3 22.8L26.4 17.5L24.5 16.9Z" fill="#CD6116" stroke="#CD6116" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M7.5 16.9L5.6 17.5L6.7 22.8L9.9 19.6L13.4 20.6L13.8 17.3L7.5 16.9Z" fill="#CD6116" stroke="#CD6116" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M18.2 17.3L18.3 10.4L20.3 5.9L13.7 5.9L15.7 10.4L15.8 17.3L18.2 17.3Z" fill="#F6851B" stroke="#F6851B" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M13.7 5.9L11.7 10.4L13.8 17.3L16.2 17.3L16.3 10.4L13.7 5.9Z" fill="#E2761B" stroke="#E2761B" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M18.6 20.6L18.2 17.3L13.8 17.3L13.4 20.6L13.4 25.5L16 27.4L18.6 25.5L18.6 20.6Z" fill="#F6851B" stroke="#F6851B" strokeWidth="0.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
 export const IconSoundOn: React.FC<IconProps> = ({ className, size = 20, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />

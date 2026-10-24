@@ -9,6 +9,7 @@ import {
   IconGemJade
 } from './SvgIcons';
 import { soundEngine } from '../audio/soundEngine';
+import { MetaMaskButton } from './MetaMaskButton';
 
 interface HeaderProps {
   demoMode: boolean;
@@ -97,6 +98,9 @@ export const Header: React.FC<HeaderProps> = ({
             <IconTemple size={16} color="#D4AF37" />
             <span className="hidden sm:inline">Kuil Pemanggilan</span>
           </button>
+
+          {/* MetaMask Web3 Wallet Connect Button */}
+          <MetaMaskButton />
 
           {/* Audit Monad Blockchain Button */}
           <button

@@ -23,6 +23,21 @@
 
 ---
 
+## Indeks Dokumentasi Teknis Lengkap
+
+Folder [`docs/`](file:///D:/projects/hack/Mythomachy/docs/) menyediakan dokumentasi teknis mendalam mengenai seluruh aspek sistem:
+
+* [**Pusat Dokumentasi (docs/README.md)**](file:///D:/projects/hack/Mythomachy/docs/README.md): Gambaran umum arsitektur proyek dan panduan navigasi.
+* [**Arsitektur Sistem (ARCHITECTURE.md)**](file:///D:/projects/hack/Mythomachy/docs/ARCHITECTURE.md): Diagram alur data, React 19, Three.js 3D rigging, Web Audio API, dan Viem Web3.
+* [**Spesifikasi Smart Contract (SMART_CONTRACT.md)**](file:///D:/projects/hack/Mythomachy/docs/SMART_CONTRACT.md): Rincian ABI, bitmask 16-bit, sistem gacha pity, dan efisiensi eksekusi paralel.
+* [**Mesin Tempur & Rigging 3D (COMBAT_ENGINE.md)**](file:///D:/projects/hack/Mythomachy/docs/COMBAT_ENGINE.md): Simulasi 60 FPS, FSM petarung, hitbox/hurtbox, anti-slant upright guard, dan raycasting kamera.
+* [**Panduan Karakter & Lore (CHARACTERS_GUIDE.md)**](file:///D:/projects/hack/Mythomachy/docs/CHARACTERS_GUIDE.md): Statistik dasar, jurus keahlian, dan ultimate untuk ke-11 dewa/legenda mitologi.
+* [**Integrasi Dompet & Jaringan (WALLETS_AND_NETWORKING.md)**](file:///D:/projects/hack/Mythomachy/docs/WALLETS_AND_NETWORKING.md): Mekanisme Burner Wallet, gas sponsor auto-faucet, integrasi MetaMask, dan RPC `eth_sendRawTransactionSync`.
+* [**Audit Blockchain & Telemetri (TELEMETRY_AND_AUDIT.md)**](file:///D:/projects/hack/Mythomachy/docs/TELEMETRY_AND_AUDIT.md): Panduan dasbor telemetri real-time, pengukur TPS, dan playground transaksi untuk juri.
+* [**Instalasi & Deployment (DEPLOYMENT_AND_SETUP.md)**](file:///D:/projects/hack/Mythomachy/docs/DEPLOYMENT_AND_SETUP.md): Panduan menjalankan proyek secara lokal, kompilasi Solc 0.8.24, dan deployment ke Monad Testnet.
+
+---
+
 ## 1. Ikhtisar & Fitur Utama
 
 Mythomachy menghadirkan pengalaman pertarungan mitologi real-time 60 FPS tanpa jeda eksternal, aset berat `.glb` yang rawan gagal, maupun istilah kripto yang membingungkan bagi pemain awam:

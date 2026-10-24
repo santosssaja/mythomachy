@@ -13,13 +13,15 @@ import {
 import { getBurnerAddress } from '../services/burnerSigner';
 import { MONAD_CONFIG } from '../config/monad';
 import { REPOSITORY_URL } from '../config/contract';
+import { useMetaMask } from '../services/metamaskService';
 import {
   IconCopy,
   IconCheck,
   IconExternalLink,
   IconLightning,
   IconFuel,
-  IconSettings
+  IconSettings,
+  IconMetaMask
 } from './SvgIcons';
 import { soundEngine } from '../audio/soundEngine';
 
@@ -28,6 +30,7 @@ interface JudgeVerificationBarProps {
 }
 
 export const JudgeVerificationBar: React.FC<JudgeVerificationBarProps> = ({ onOpenHelp }) => {
+  const metaMask = useMetaMask();
   const [testing, setTesting] = useState(false);
   const [funding, setFunding] = useState(false);
   const [balance, setBalance] = useState<string>('Memuat...');
@@ -276,6 +279,44 @@ export const JudgeVerificationBar: React.FC<JudgeVerificationBarProps> = ({ onOp
               >
                 {balance}
               </span>
+            </div>
+
+            {/* MetaMask External Wallet Pill Badge */}
+            <div
+              className="judge-pill bg-[#0B0A0F] border border-[#2D2842] shadow-sm flex items-center gap-2"
+              style={{ padding: '6px 14px' }}
+            >
+              <IconMetaMask size={14} className="shrink-0" />
+              <span className="text-[#9E98B0] text-[11px] font-semibold">MetaMask:</span>
+              {metaMask.isConnected && metaMask.address ? (
+                <>
+                  <span
+                    className="font-mono text-[#F4F2F7] text-[11px]"
+                    title={metaMask.address}
+                  >
+                    {metaMask.address.slice(0, 6)}...{metaMask.address.slice(-4)}
+                  </span>
+                  <span
+                    className={`font-mono text-[11px] font-bold rounded ${
+                      metaMask.isMonadTestnet
+                        ? 'bg-[#2E9E6B]/20 text-[#2E9E6B] border border-[#2E9E6B]/40'
+                        : 'bg-[#E67E22]/20 text-[#E67E22] border border-[#E67E22]/40'
+                    }`}
+                    style={{ padding: '3px 8px' }}
+                    title={metaMask.isMonadTestnet ? 'Saldo MetaMask di Monad Testnet' : 'Beralih ke Monad Testnet'}
+                  >
+                    {metaMask.balance}
+                  </span>
+                </>
+              ) : (
+                <button
+                  onClick={() => metaMask.connect()}
+                  className="text-[11px] font-bold text-[#F6851B] hover:text-[#FFA04D] transition-colors cursor-pointer select-none"
+                  title="Sambungkan Dompet MetaMask"
+                >
+                  + Sambungkan
+                </button>
+              )}
             </div>
 
             {/* GitHub Repo */}

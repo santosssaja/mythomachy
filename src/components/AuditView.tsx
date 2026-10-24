@@ -16,6 +16,7 @@ import { MONAD_CONFIG } from '../config/monad';
 import { CHARACTER_LIST } from '../config/characters';
 import { PlayerProfile } from '../types/game';
 import { soundEngine } from '../audio/soundEngine';
+import { useMetaMask } from '../services/metamaskService';
 import {
   IconCheck,
   IconCopy,
@@ -27,7 +28,8 @@ import {
   IconTerminal,
   IconDatabase,
   IconClose,
-  IconTrophy
+  IconTrophy,
+  IconMetaMask
 } from './SvgIcons';
 
 interface AuditViewProps {
@@ -53,6 +55,7 @@ export const AuditView: React.FC<AuditViewProps> = ({
   playerProfile,
   onProfileUpdated
 }) => {
+  const metaMask = useMetaMask();
   const [activeTab, setActiveTab] = useState<AuditTab>('telemetry');
   const [loading, setLoading] = useState(false);
   const [auditData, setAuditData] = useState<MonadAuditData | null>(null);
@@ -72,6 +75,7 @@ export const AuditView: React.FC<AuditViewProps> = ({
   // Copy badges
   const [copiedContract, setCopiedContract] = useState(false);
   const [copiedBurner, setCopiedBurner] = useState(false);
+  const [copiedMetaMask, setCopiedMetaMask] = useState(false);
   const [copiedBlockHash, setCopiedBlockHash] = useState(false);
 
   // Settings / Overrides modal
@@ -123,7 +127,7 @@ export const AuditView: React.FC<AuditViewProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  const handleCopy = (text: string, type: 'contract' | 'burner' | 'block') => {
+  const handleCopy = (text: string, type: 'contract' | 'burner' | 'block' | 'metamask') => {
     navigator.clipboard.writeText(text);
     if (type === 'contract') {
       setCopiedContract(true);
@@ -134,6 +138,9 @@ export const AuditView: React.FC<AuditViewProps> = ({
     } else if (type === 'block') {
       setCopiedBlockHash(true);
       setTimeout(() => setCopiedBlockHash(false), 2000);
+    } else if (type === 'metamask') {
+      setCopiedMetaMask(true);
+      setTimeout(() => setCopiedMetaMask(false), 2000);
     }
     soundEngine.playClickSound();
   };
@@ -833,72 +840,198 @@ export const AuditView: React.FC<AuditViewProps> = ({
 
       {/* TAB 3: DOMPET SESI & BITMASK PEMAIN */}
       {activeTab === 'wallet' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <div className="card-surface space-y-4" style={{ padding: '20px 24px' }}>
-            <h2 className="text-sm font-cinzel font-bold uppercase tracking-wider text-[#D4AF37] flex items-center gap-2 mb-2">
-              <IconFuel size={16} color="#D4AF37" />
-              Dompet Sesi Tanpa Kunci (Burner Session)
-            </h2>
-            <p className="text-xs text-[#9E98B0] leading-relaxed">
-              Pemain tidak perlu menghubungkan ekstensi wallet pihak ketiga. Sesi akun dienkripsi secara lokal di penyimpanan peramban (browser) dan didukung gas sponsorship otomatis.
-            </p>
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Card 1: Burner Session */}
+            <div className="card-surface space-y-4" style={{ padding: '20px 24px' }}>
+              <h2 className="text-sm font-cinzel font-bold uppercase tracking-wider text-[#D4AF37] flex items-center gap-2 mb-2">
+                <IconFuel size={16} color="#D4AF37" />
+                Dompet Sesi Tanpa Kunci (Burner Session)
+              </h2>
+              <p className="text-xs text-[#9E98B0] leading-relaxed">
+                Pemain tidak perlu menghubungkan ekstensi wallet pihak ketiga untuk bermain. Sesi akun dienkripsi secara lokal di penyimpanan peramban (browser) dan didukung gas sponsorship otomatis.
+              </p>
 
-            <div
-              className="rounded-xl bg-[#14121D] border border-[#2D2842] space-y-3 text-xs"
-              style={{ padding: '14px 18px' }}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[#9E98B0]">Alamat Dompet Sesi:</span>
+              <div
+                className="rounded-xl bg-[#14121D] border border-[#2D2842] space-y-3 text-xs"
+                style={{ padding: '14px 18px' }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[#9E98B0]">Alamat Dompet Sesi:</span>
+                  <button
+                    onClick={() => handleCopy(currentBurner, 'burner')}
+                    className="text-[#D4AF37] hover:text-white flex items-center gap-1.5 font-mono cursor-pointer"
+                    title="Salin Alamat"
+                  >
+                    {copiedBurner ? <IconCheck size={12} color="#2E9E6B" /> : <IconCopy size={12} />}
+                    <span>{currentBurner.slice(0, 10)}...{currentBurner.slice(-8)}</span>
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-[#9E98B0]">Saldo MON Live:</span>
+                  <span className={`font-mono font-bold ${auditData?.isFunded ? 'text-[#2E9E6B]' : 'text-[#FF5555]'}`}>
+                    {auditData?.burnerBalanceFormatted || '0.0000 MON'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-[#9E98B0]">Nonce Transaksi (Jumlah Tx):</span>
+                  <span className="font-mono text-[#F4F2F7]">
+                    {auditData ? auditData.burnerNonce : 0}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-[#9E98B0]">Gas Sponsor Key:</span>
+                  <span className={`font-mono font-bold ${auditData?.sponsorKeyConfigured ? 'text-[#2E9E6B]' : 'text-[#D4AF37]'}`}>
+                    {auditData?.sponsorKeyConfigured ? 'Terkonfigurasi (Aktif)' : 'Mode Faucet Otomatis'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3 pt-2">
                 <button
-                  onClick={() => handleCopy(currentBurner, 'burner')}
-                  className="text-[#D4AF37] hover:text-white flex items-center gap-1.5 font-mono cursor-pointer"
-                  title="Salin Alamat"
+                  onClick={handleAutoFund}
+                  disabled={faucetLoading}
+                  className="header-pill bg-[#2E9E6B]/20 border border-[#2E9E6B]/50 text-[#2E9E6B] hover:bg-[#2E9E6B]/35 transition-all text-xs font-bold cursor-pointer disabled:opacity-50"
+                  style={{ padding: '8px 18px' }}
                 >
-                  {copiedBurner ? <IconCheck size={12} color="#2E9E6B" /> : <IconCopy size={12} />}
-                  <span>{currentBurner.slice(0, 10)}...{currentBurner.slice(-8)}</span>
+                  <IconLightning size={14} />
+                  <span>{faucetLoading ? 'Mengirim Gas...' : 'Isi Saldo Sesi (+0.02 MON)'}</span>
                 </button>
-              </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-[#9E98B0]">Saldo MON Live:</span>
-                <span className={`font-mono font-bold ${auditData?.isFunded ? 'text-[#2E9E6B]' : 'text-[#FF5555]'}`}>
-                  {auditData?.burnerBalanceFormatted || '0.0000 MON'}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-[#9E98B0]">Nonce Transaksi (Jumlah Tx):</span>
-                <span className="font-mono text-[#F4F2F7]">
-                  {auditData ? auditData.burnerNonce : 0}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-[#9E98B0]">Gas Sponsor Key:</span>
-                <span className={`font-mono font-bold ${auditData?.sponsorKeyConfigured ? 'text-[#2E9E6B]' : 'text-[#D4AF37]'}`}>
-                  {auditData?.sponsorKeyConfigured ? 'Terkonfigurasi (Aktif)' : 'Mode Faucet Otomatis'}
-                </span>
+                <button
+                  onClick={handleResetBurner}
+                  className="header-pill bg-[#1F1B2E] border border-[#FF5555]/40 text-[#FF5555] hover:bg-[#FF5555]/20 transition-all text-xs font-bold cursor-pointer"
+                  style={{ padding: '8px 18px' }}
+                >
+                  <span>Hasilkan Dompet Baru</span>
+                </button>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3 pt-2">
-              <button
-                onClick={handleAutoFund}
-                disabled={faucetLoading}
-                className="header-pill bg-[#2E9E6B]/20 border border-[#2E9E6B]/50 text-[#2E9E6B] hover:bg-[#2E9E6B]/35 transition-all text-xs font-bold cursor-pointer disabled:opacity-50"
-                style={{ padding: '8px 18px' }}
-              >
-                <IconLightning size={14} />
-                <span>{faucetLoading ? 'Mengirim Gas...' : 'Isi Saldo Sesi (+0.02 MON)'}</span>
-              </button>
+            {/* Card 2: MetaMask External Web3 Wallet */}
+            <div className="card-surface space-y-4" style={{ padding: '20px 24px' }}>
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-sm font-cinzel font-bold uppercase tracking-wider text-[#F6851B] flex items-center gap-2">
+                  <IconMetaMask size={18} />
+                  <span>Dompet Web3 Eksternal (MetaMask)</span>
+                </h2>
+                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                  metaMask.isConnected
+                    ? metaMask.isMonadTestnet
+                      ? 'bg-[#2E9E6B]/15 border-[#2E9E6B]/40 text-[#2E9E6B]'
+                      : 'bg-[#E67E22]/15 border-[#E67E22]/40 text-[#E67E22]'
+                    : 'bg-[#9E98B0]/15 border-[#9E98B0]/30 text-[#9E98B0]'
+                }`}>
+                  {metaMask.isConnected ? (metaMask.isMonadTestnet ? 'TERHUBUNG (MONAD)' : 'JARINGAN LAIN') : 'BELUM TERHUBUNG'}
+                </span>
+              </div>
+              <p className="text-xs text-[#9E98B0] leading-relaxed">
+                Hubungkan ekstensi MetaMask untuk memverifikasi akun pribadi di jaringan Monad Testnet secara mandiri (*self-custody*), memeriksa saldo MON nyata, atau menandatangani transaksi on-chain.
+              </p>
 
-              <button
-                onClick={handleResetBurner}
-                className="header-pill bg-[#1F1B2E] border border-[#FF5555]/40 text-[#FF5555] hover:bg-[#FF5555]/20 transition-all text-xs font-bold cursor-pointer"
-                style={{ padding: '8px 18px' }}
-              >
-                <span>Hasilkan Dompet Baru</span>
-              </button>
+              {metaMask.isConnected && metaMask.address ? (
+                <div
+                  className="rounded-xl bg-[#14121D] border border-[#2D2842] space-y-3 text-xs"
+                  style={{ padding: '14px 18px' }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#9E98B0]">Alamat MetaMask:</span>
+                    <button
+                      onClick={() => handleCopy(metaMask.address!, 'metamask')}
+                      className="text-[#D4AF37] hover:text-white flex items-center gap-1.5 font-mono cursor-pointer"
+                      title="Salin Alamat MetaMask"
+                    >
+                      {copiedMetaMask ? <IconCheck size={12} color="#2E9E6B" /> : <IconCopy size={12} />}
+                      <span>{metaMask.address.slice(0, 10)}...{metaMask.address.slice(-8)}</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#9E98B0]">Saldo MON Live:</span>
+                    <span className="font-mono font-bold text-[#D4AF37]">
+                      {metaMask.balance}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#9E98B0]">Jaringan Aktif:</span>
+                    <span className={`font-mono font-bold ${metaMask.isMonadTestnet ? 'text-[#2E9E6B]' : 'text-[#E67E22]'}`}>
+                      {metaMask.isMonadTestnet ? 'Monad Testnet (Chain ID 10143)' : `Chain ID ${metaMask.chainId || 'Tidak Diketahui'}`}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#9E98B0]">Tautan Explorer:</span>
+                    <a
+                      href={`${MONAD_CONFIG.explorerUrl}/address/${metaMask.address}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[#6E56CF] hover:text-[#9D88F5] flex items-center gap-1 font-mono cursor-pointer"
+                    >
+                      <span>Lihat Akun</span>
+                      <IconExternalLink size={12} />
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="rounded-xl bg-[#14121D]/60 border border-[#2D2842] space-y-2 text-xs flex flex-col items-center justify-center text-center"
+                  style={{ padding: '24px 18px' }}
+                >
+                  <IconMetaMask size={32} />
+                  <p className="text-xs text-[#F4F2F7] font-semibold mt-1">
+                    MetaMask Belum Terhubung
+                  </p>
+                  <p className="text-[11px] text-[#9E98B0] max-w-xs">
+                    Klik tombol di bawah untuk meminta otorisasi dari ekstensi browser MetaMask Anda.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-3 pt-2">
+                {!metaMask.isConnected ? (
+                  <button
+                    onClick={() => metaMask.connect()}
+                    disabled={metaMask.isConnecting}
+                    className="header-pill bg-gradient-to-r from-[#F6851B] to-[#E2761B] text-black hover:opacity-95 transition-all text-xs font-bold cursor-pointer flex items-center gap-2 shadow-md shadow-[#F6851B]/20"
+                    style={{ padding: '8px 18px' }}
+                  >
+                    <IconMetaMask size={16} />
+                    <span>{metaMask.isConnecting ? 'Menyambungkan...' : 'Sambungkan MetaMask'}</span>
+                  </button>
+                ) : (
+                  <>
+                    {!metaMask.isMonadTestnet && (
+                      <button
+                        onClick={() => metaMask.switchNetwork()}
+                        className="header-pill bg-[#E67E22] text-black hover:bg-[#D35400] transition-all text-xs font-bold cursor-pointer flex items-center gap-1.5"
+                        style={{ padding: '8px 18px' }}
+                      >
+                        <IconLightning size={14} color="#000" />
+                        <span>Beralih ke Monad Testnet</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => metaMask.refreshBalance()}
+                      className="header-pill bg-[#14121D] border border-[#2D2842] text-[#9E98B0] hover:text-white transition-all text-xs font-bold cursor-pointer"
+                      style={{ padding: '8px 16px' }}
+                    >
+                      <IconRefresh size={14} />
+                      <span>Segarkan Saldo</span>
+                    </button>
+                    <button
+                      onClick={() => metaMask.disconnect()}
+                      className="header-pill bg-[#1F1B2E] border border-[#FF5555]/40 text-[#FF5555] hover:bg-[#FF5555]/20 transition-all text-xs font-bold cursor-pointer"
+                      style={{ padding: '8px 16px' }}
+                    >
+                      <span>Putuskan Sambungan</span>
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

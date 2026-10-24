@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconClose } from './SvgIcons';
+import { IconClose, IconFiligreeCorner } from './SvgIcons';
 
 export type HelpSectionId =
   | 'ruang_tunggu'
@@ -7,7 +7,8 @@ export type HelpSectionId =
   | 'pemilihan_karakter'
   | 'pengaturan_grafis'
   | 'pemilihan_peta'
-  | 'mode_peragaan';
+  | 'mode_peragaan'
+  | 'panggung_pratinjau';
 
 interface HelpContent {
   title: string;
@@ -89,6 +90,18 @@ const HELP_DATA: Record<HelpSectionId, HelpContent> = {
       'Bilah Panel Verifikasi Juri akan muncul di bagian bawah layar untuk menguji transaksi langsung dan menampilkan tautan kontrak.'
     ],
     tips: 'Mode Peragaan selalu MATI secara default saat halaman dimuat ulang sesuai standar kompetisi.'
+  },
+
+  panggung_pratinjau: {
+    title: 'Panggung Pratinjau Ksatria',
+    badge: 'Panggung Pratinjau',
+    summary: 'Panel ini menampilkan model visual 3D Ksatria dan Medan Laga yang sedang Anda pilih secara langsung, lengkap dengan statistik Vitalitas (HP), Kecepatan, dan daftar 3 keahlian tempur.',
+    steps: [
+      'Gunakan tetikus (mouse drag) atau usapan layar ponsel untuk memutar model 3D ksatria 360 derajat.',
+      'Periksa baris Keahlian Tempur Ksatria untuk mempelajari jurus dasar, jurus 1, dan jurus pamungkas.',
+      'Gunakan tombol pintas Ganti Petarung dan Ganti Medan Laga untuk berpindah langkah konfigurasi secara instan.'
+    ],
+    tips: 'Anda juga dapat memutar model 3D menggunakan roda gulir mouse (wheel scroll) atau tombol putar 45 derajat di pojok panggung.'
   }
 };
 
@@ -103,12 +116,26 @@ export const HelpModal: React.FC<HelpModalProps> = ({ sectionId, onClose }) => {
   if (!data) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg panel-frame p-6 rounded-xl border gold-border text-left shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-lg panel-frame p-6 sm:p-7 rounded-2xl border gold-border text-left shadow-[0_12px_48px_rgba(0,0,0,0.9),0_0_24px_rgba(212,175,55,0.25)]">
+        {/* Filigree Corner Flourishes */}
+        <div className="absolute top-2 left-2 pointer-events-none opacity-70">
+          <IconFiligreeCorner size={20} color="#D4AF37" position="top-left" />
+        </div>
+        <div className="absolute top-2 right-2 pointer-events-none opacity-70">
+          <IconFiligreeCorner size={20} color="#D4AF37" position="top-right" />
+        </div>
+        <div className="absolute bottom-2 left-2 pointer-events-none opacity-70">
+          <IconFiligreeCorner size={20} color="#D4AF37" position="bottom-left" />
+        </div>
+        <div className="absolute bottom-2 right-2 pointer-events-none opacity-70">
+          <IconFiligreeCorner size={20} color="#D4AF37" position="bottom-right" />
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#2D2842]">
           <div className="flex items-center gap-3">
-            <span className="help-btn pointer-events-none">?</span>
+            <span className="help-btn-ornate pointer-events-none">?</span>
             <div>
               <span className="text-xs uppercase tracking-widest text-[#D4AF37] font-semibold">
                 {data.badge}
@@ -120,7 +147,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ sectionId, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#9E98B0] hover:text-white hover:bg-[#1F1B2E] transition-colors"
+            className="p-1.5 rounded-lg text-[#9E98B0] hover:text-white hover:bg-[#1F1B2E] transition-colors cursor-pointer"
           >
             <IconClose size={20} />
           </button>

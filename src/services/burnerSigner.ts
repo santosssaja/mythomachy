@@ -27,6 +27,16 @@ export function getBurnerAddress(): `0x${string}` {
   return getBurnerAccount().address;
 }
 
+export function resetBurnerWallet(): `0x${string}` {
+  const pk = generatePrivateKey();
+  localStorage.setItem(STORAGE_KEY_PK, pk);
+  const newAccount = privateKeyToAccount(pk);
+  const profile = getStoredPlayerProfile();
+  profile.address = newAccount.address;
+  saveStoredPlayerProfile(profile);
+  return newAccount.address;
+}
+
 export function getStoredPlayerProfile(): PlayerProfile {
   const address = getBurnerAddress();
   const saved = localStorage.getItem(STORAGE_KEY_PROFILE);

@@ -9,7 +9,7 @@ import {
   RoomInfo
 } from './types/game';
 import { getStoredPlayerProfile } from './services/burnerSigner';
-import { CHARACTERS } from './config/characters';
+import { CHARACTERS, CHARACTER_LIST } from './config/characters';
 import { MAPS } from './config/maps';
 import { soundEngine } from './audio/soundEngine';
 import { Header } from './components/Header';
@@ -23,8 +23,24 @@ import { GachaTempleModal } from './components/GachaTempleModal';
 import { SettingsModal } from './components/SettingsModal';
 import { HelpModal, HelpSectionId } from './components/HelpModal';
 import { ArenaView } from './components/ArenaView';
+import { IconCheck, IconFiligreeCorner, IconGemJade } from './components/SvgIcons';
 
 export type LobbyTab = 'mode' | 'character' | 'map';
+
+const ASH_PARTICLES = [
+  { left: '6%', top: '88%', delay: '0s', duration: '8.5s', size: 4 },
+  { left: '16%', top: '78%', delay: '2.4s', duration: '11s', size: 3 },
+  { left: '26%', top: '92%', delay: '1.1s', duration: '9.2s', size: 5 },
+  { left: '39%', top: '82%', delay: '4.2s', duration: '12s', size: 3 },
+  { left: '52%', top: '86%', delay: '0.6s', duration: '10.4s', size: 4 },
+  { left: '65%', top: '74%', delay: '3.1s', duration: '8.8s', size: 3 },
+  { left: '78%', top: '85%', delay: '1.7s', duration: '11.2s', size: 5 },
+  { left: '88%', top: '79%', delay: '4.6s', duration: '9.8s', size: 4 },
+  { left: '12%', top: '62%', delay: '2.8s', duration: '10s', size: 3 },
+  { left: '94%', top: '64%', delay: '1.9s', duration: '12.5s', size: 3 },
+  { left: '34%', top: '69%', delay: '4.8s', duration: '9.1s', size: 4 },
+  { left: '71%', top: '60%', delay: '1.4s', duration: '10.8s', size: 4 }
+];
 
 export const App: React.FC = () => {
   // CRITICAL RULE: demoMode MUST initialize to false (OFF) by default
@@ -138,16 +154,34 @@ export const App: React.FC = () => {
     ? diffSublabel
     : `Pemain (${currentRoom?.code || 'Acak'})`;
 
+  const unlockedCount = CHARACTER_LIST.filter(
+    c => demoMode || !c.isApex || (playerProfile.unlockedMask & (1 << c.numericId)) !== 0
+  ).length;
+
   return (
     <div
-      className={`min-h-screen bg-[#0B0A0F] text-[#F4F2F7] flex flex-col relative ${
-        demoMode ? 'pb-36' : 'pb-28'
-      }`}
+      className="app-wrapper text-[#F4F2F7] relative select-none"
       style={{
         backgroundImage:
-          'radial-gradient(circle at 50% 0%, rgba(110, 86, 207, 0.16) 0%, transparent 65%), radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.08) 0%, transparent 55%)'
+          'radial-gradient(circle at 50% 0%, rgba(110, 86, 207, 0.20) 0%, transparent 65%), radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.10) 0%, transparent 55%)'
       }}
     >
+      {/* Subtle Floating Cosmic Purple Embers Overlay */}
+      {ASH_PARTICLES.map((p, idx) => (
+        <div
+          key={idx}
+          className="particle-ash"
+          style={{
+            left: p.left,
+            top: p.top,
+            animationDelay: p.delay,
+            animationDuration: p.duration,
+            width: `${p.size}px`,
+            height: `${p.size}px`
+          }}
+        />
+      ))}
+
       {/* Top Header & Settings Bar (KUIL PEMANGGILAN exists ONLY here) */}
       <Header
         demoMode={demoMode}
@@ -161,226 +195,184 @@ export const App: React.FC = () => {
         onToggleMute={handleToggleMute}
       />
 
-      {/* Main Game Screen */}
-      <main className="max-w-[1400px] mx-auto w-full px-5 sm:px-7 pt-4 flex-grow flex flex-col">
-        {currentView === 'lobby' ? (
-          <div className="space-y-6 animate-fade-in flex-grow flex flex-col">
-            {/* Step Navigation Tabs with Proper Breathing Room (margin: 20px 0, gap: 12px) */}
-            <div
-              className="flex flex-wrap items-center"
-              style={{ margin: '16px 0 20px 0', gap: '12px' }}
-            >
-              {/* Step 1: Mode Laga */}
-              <button
-                onClick={() => {
-                  soundEngine.playClickSound();
-                  setActiveTab('mode');
-                  setIsBotMatch(true);
-                }}
-                className={`flex-1 min-w-[200px] flex items-center gap-3.5 transition-all duration-200 cursor-pointer text-left border ${
-                  activeTab === 'mode'
-                    ? 'bg-gradient-to-r from-[#6E56CF]/30 via-[#1F1B2E] to-[#6E56CF]/20 border-[#D4AF37] shadow-lg shadow-[#6E56CF]/20'
-                    : 'bg-[#14121D] border-[#2D2842] text-[#9E98B0] hover:border-[#6E56CF]/60 hover:text-[#F4F2F7]'
-                }`}
-                style={{ padding: '12px 24px', borderRadius: '8px' }}
-              >
-                <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                    activeTab === 'mode'
-                      ? 'bg-[#D4AF37] text-[#0B0A0F]'
-                      : 'bg-[#1F1B2E] text-[#9E98B0] border border-[#2D2842]'
+      {/* MAIN WORKSPACE: 2-COLUMN AAA FIGHTING GAME LOBBY */}
+      {currentView === 'lobby' ? (
+        <>
+          <main className="main-content relative z-10 animate-fade-in">
+            {/* LEFT COLUMN: LIVE FIGHTER & ARENA SHOWCASE STAGE */}
+            <aside className="left-panel">
+              <LobbyShowcaseCard
+                selectedChar={selectedChar}
+                selectedMap={selectedMap}
+                onNavigateTab={tab => setActiveTab(tab)}
+                botDifficulty={botDifficulty}
+                isBotMatch={isBotMatch}
+                onOpenHelp={() => setHelpSection('panggung_pratinjau')}
+              />
+            </aside>
+
+            {/* RIGHT COLUMN: STEP NAVIGATION & ACTIVE CONFIGURATION PANEL */}
+            <section className="right-panel">
+              {/* Spacious Segmented Step Tabs */}
+              <nav className="stepper-nav grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <button
+                  onClick={() => {
+                    soundEngine.playClickSound();
+                    setActiveTab('mode');
+                    setIsBotMatch(true);
+                  }}
+                  className={`card-surface px-5 py-3 text-left flex items-center gap-3 cursor-pointer transition select-none ${
+                    activeTab === 'mode' ? 'card-selected-monad' : 'hover:border-[#6E56CF]'
                   }`}
                 >
-                  1
-                </span>
-                <div>
                   <span
-                    className={`font-cinzel text-xs sm:text-sm font-bold block ${
-                      activeTab === 'mode' ? 'text-[#F4F2F7]' : 'text-[#9E98B0]'
+                    className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 ${
+                      activeTab === 'mode'
+                        ? 'bg-[#6E56CF] text-[#F4F2F7]'
+                        : 'bg-[#1F1B2E] border border-[#2D2842] text-[#9E98B0]'
                     }`}
                   >
-                    1. Mode Pertandingan
+                    1
                   </span>
-                  <span className="text-[11px] text-[#D4AF37] block mt-0.5 font-medium">
-                    {modeSublabel}
-                  </span>
-                </div>
-              </button>
+                  <div className="overflow-hidden">
+                    <div className="text-xs font-bold uppercase tracking-wider text-[#F4F2F7]">
+                      Mode Laga
+                    </div>
+                    <div className="text-[11px] text-[#9E98B0] truncate mt-0.5">
+                      {modeSublabel}
+                    </div>
+                  </div>
+                </button>
 
-              {/* Step 2: Pilih Petarung */}
-              <button
-                onClick={() => {
-                  soundEngine.playClickSound();
-                  setActiveTab('character');
-                }}
-                className={`flex-1 min-w-[200px] flex items-center gap-3.5 transition-all duration-200 cursor-pointer text-left border ${
-                  activeTab === 'character'
-                    ? 'bg-gradient-to-r from-[#6E56CF]/30 via-[#1F1B2E] to-[#6E56CF]/20 border-[#D4AF37] shadow-lg shadow-[#6E56CF]/20'
-                    : 'bg-[#14121D] border-[#2D2842] text-[#9E98B0] hover:border-[#6E56CF]/60 hover:text-[#F4F2F7]'
-                }`}
-                style={{ padding: '12px 24px', borderRadius: '8px' }}
-              >
-                <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                    activeTab === 'character'
-                      ? 'bg-[#D4AF37] text-[#0B0A0F]'
-                      : 'bg-[#1F1B2E] text-[#9E98B0] border border-[#2D2842]'
+                <button
+                  onClick={() => {
+                    soundEngine.playClickSound();
+                    setActiveTab('character');
+                  }}
+                  className={`card-surface px-5 py-3 text-left flex items-center gap-3 cursor-pointer transition select-none ${
+                    activeTab === 'character' ? 'card-selected-monad' : 'hover:border-[#6E56CF]'
                   }`}
                 >
-                  2
-                </span>
-                <div>
                   <span
-                    className={`font-cinzel text-xs sm:text-sm font-bold block ${
-                      activeTab === 'character' ? 'text-[#F4F2F7]' : 'text-[#9E98B0]'
+                    className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 ${
+                      activeTab === 'character'
+                        ? 'bg-[#6E56CF] text-[#F4F2F7]'
+                        : 'bg-[#1F1B2E] border border-[#2D2842] text-[#9E98B0]'
                     }`}
                   >
-                    2. Pilih Ksatria
+                    2
                   </span>
-                  <span className="text-[11px] text-[#D4AF37] block mt-0.5 font-medium truncate max-w-[150px]">
-                    {selectedChar.name} ({selectedChar.origin})
-                  </span>
-                </div>
-              </button>
+                  <div className="overflow-hidden">
+                    <div className="text-xs font-bold uppercase tracking-wider text-[#F4F2F7]">
+                      Pilih Petarung
+                    </div>
+                    <div className="text-[11px] text-[#D4AF37] truncate mt-0.5">
+                      {selectedChar.name} ({unlockedCount}/11 Terbuka)
+                    </div>
+                  </div>
+                </button>
 
-              {/* Step 3: Pilih Medan */}
-              <button
-                onClick={() => {
-                  soundEngine.playClickSound();
-                  setActiveTab('map');
-                }}
-                className={`flex-1 min-w-[200px] flex items-center gap-3.5 transition-all duration-200 cursor-pointer text-left border ${
-                  activeTab === 'map'
-                    ? 'bg-gradient-to-r from-[#6E56CF]/30 via-[#1F1B2E] to-[#6E56CF]/20 border-[#D4AF37] shadow-lg shadow-[#6E56CF]/20'
-                    : 'bg-[#14121D] border-[#2D2842] text-[#9E98B0] hover:border-[#6E56CF]/60 hover:text-[#F4F2F7]'
-                }`}
-                style={{ padding: '12px 24px', borderRadius: '8px' }}
-              >
-                <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
-                    activeTab === 'map'
-                      ? 'bg-[#D4AF37] text-[#0B0A0F]'
-                      : 'bg-[#1F1B2E] text-[#9E98B0] border border-[#2D2842]'
+                <button
+                  onClick={() => {
+                    soundEngine.playClickSound();
+                    setActiveTab('map');
+                  }}
+                  className={`card-surface px-5 py-3 text-left flex items-center gap-3 cursor-pointer transition select-none ${
+                    activeTab === 'map' ? 'card-selected-monad' : 'hover:border-[#6E56CF]'
                   }`}
                 >
-                  3
-                </span>
-                <div>
                   <span
-                    className={`font-cinzel text-xs sm:text-sm font-bold block ${
-                      activeTab === 'map' ? 'text-[#F4F2F7]' : 'text-[#9E98B0]'
+                    className={`w-7 h-7 rounded-full font-bold text-xs flex items-center justify-center shrink-0 ${
+                      activeTab === 'map'
+                        ? 'bg-[#6E56CF] text-[#F4F2F7]'
+                        : 'bg-[#1F1B2E] border border-[#2D2842] text-[#9E98B0]'
                     }`}
                   >
-                    3. Pilih Medan Laga
+                    3
                   </span>
-                  <span className="text-[11px] text-[#D4AF37] block mt-0.5 font-medium truncate max-w-[150px]">
-                    {selectedMap.name}
-                  </span>
-                </div>
-              </button>
-            </div>
+                  <div className="overflow-hidden">
+                    <div className="text-xs font-bold uppercase tracking-wider text-[#F4F2F7]">
+                      Pilih Medan
+                    </div>
+                    <div className="text-[11px] text-[#9E98B0] truncate mt-0.5">
+                      {selectedMap.name}
+                    </div>
+                  </div>
+                </button>
+              </nav>
 
-            {/* UPGRADE TO A 2-COLUMN "AAA FIGHTING GAME LOBBY" LAYOUT (12 Columns) */}
-            <div
-              className="grid grid-cols-1 lg:grid-cols-12 items-start flex-grow"
-              style={{ gap: '24px' }}
-            >
-              {/* Left Column (4 Columns): Live Fighter & Arena Showcase Card */}
-              <div className="lg:col-span-4 sticky top-20">
-                <LobbyShowcaseCard
-                  selectedChar={selectedChar}
-                  selectedMap={selectedMap}
-                  onNavigateTab={tab => setActiveTab(tab)}
+              {/* Active Step Panel */}
+              {activeTab === 'mode' && (
+                <LobbyView
+                  selectedMapId={selectedMapId}
+                  demoMode={demoMode}
+                  botDifficulty={botDifficulty}
+                  onSelectDifficulty={diff => {
+                    setBotDifficulty(diff);
+                    setIsBotMatch(true);
+                  }}
+                  onSelectRoom={handleSelectRoom}
+                  onOpenHelp={() => setHelpSection('ruang_tunggu')}
+                  onAdvanceTab={() => setActiveTab('character')}
                 />
-              </div>
+              )}
 
-              {/* Right Column (8 Columns): Active Step Configuration Panel */}
-              <div className="lg:col-span-8 panel-frame p-6 sm:p-7 rounded-2xl border gold-border">
-                {activeTab === 'mode' && (
-                  <div
-                    className="animate-fade-in"
-                    style={{ transition: 'opacity 180ms ease-out' }}
-                  >
-                    <LobbyView
-                      selectedMapId={selectedMapId}
-                      demoMode={demoMode}
-                      botDifficulty={botDifficulty}
-                      onSelectDifficulty={diff => {
-                        setBotDifficulty(diff);
-                        setIsBotMatch(true);
-                      }}
-                      onSelectRoom={handleSelectRoom}
-                      onOpenHelp={() => setHelpSection('ruang_tunggu')}
-                    />
-                  </div>
-                )}
+              {activeTab === 'character' && (
+                <CharacterSelectView
+                  selectedId={selectedCharId}
+                  onSelectCharacter={setSelectedCharId}
+                  playerProfile={playerProfile}
+                  demoMode={demoMode}
+                  onOpenGacha={() => setIsGachaOpen(true)}
+                  onOpenHelp={() => setHelpSection('pemilihan_karakter')}
+                  onAdvanceTab={() => setActiveTab('map')}
+                />
+              )}
 
-                {activeTab === 'character' && (
-                  <div
-                    className="animate-fade-in"
-                    style={{ transition: 'opacity 180ms ease-out' }}
-                  >
-                    <CharacterSelectView
-                      selectedId={selectedCharId}
-                      onSelectCharacter={setSelectedCharId}
-                      playerProfile={playerProfile}
-                      demoMode={demoMode}
-                      onOpenGacha={() => setIsGachaOpen(true)}
-                      onOpenHelp={() => setHelpSection('pemilihan_karakter')}
-                    />
-                  </div>
-                )}
+              {activeTab === 'map' && (
+                <MapSelectView
+                  selectedMapId={selectedMapId}
+                  onSelectMap={setSelectedMapId}
+                  onOpenHelp={() => setHelpSection('pemilihan_peta')}
+                />
+              )}
+            </section>
+          </main>
 
-                {activeTab === 'map' && (
-                  <div
-                    className="animate-fade-in"
-                    style={{ transition: 'opacity 180ms ease-out' }}
-                  >
-                    <MapSelectView
-                      selectedMapId={selectedMapId}
-                      onSelectMap={setSelectedMapId}
-                      onOpenHelp={() => setHelpSection('pemilihan_peta')}
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ONE Unified Bottom Action Dock */}
-            <BottomActionDock
-              selectedChar={selectedChar}
-              selectedMap={selectedMap}
-              isBotMatch={isBotMatch}
-              botDifficulty={botDifficulty}
-              currentRoom={currentRoom}
-              onLaunchMatch={handleLaunchMatch}
-              demoMode={demoMode}
-            />
-          </div>
-        ) : (
-          /* Match Arena View */
-          <div className="animate-fade-in flex-grow flex flex-col justify-center">
-            <ArenaView
-              mapId={selectedMapId}
-              viewMode={viewMode}
-              graphicsPreset={graphicsPreset}
-              p1CharId={selectedCharId}
-              p2CharId={opponentCharId}
-              p1Name="Ksatria Anda"
-              p2Name={
-                isBotMatch
-                  ? `Bot Mythomachy (${diffSublabel})`
-                  : `Lawan ${currentRoom?.code || 'Online'}`
-              }
-              isBotMatch={isBotMatch}
-              botDifficulty={botDifficulty}
-              playerProfile={playerProfile}
-              onProfileUpdated={setPlayerProfile}
-              onExitMatch={() => setCurrentView('lobby')}
-            />
-          </div>
-        )}
-      </main>
+          {/* ONE Unified Bottom Action Dock */}
+          <BottomActionDock
+            selectedChar={selectedChar}
+            selectedMap={selectedMap}
+            isBotMatch={isBotMatch}
+            botDifficulty={botDifficulty}
+            currentRoom={currentRoom}
+            onLaunchMatch={handleLaunchMatch}
+            demoMode={demoMode}
+          />
+        </>
+      ) : (
+        /* Match Arena View */
+        <main className="max-w-[1520px] w-full mx-auto px-4 sm:px-6 pt-3 flex-1 min-h-0 flex flex-col relative z-10 animate-fade-in overflow-hidden">
+          <ArenaView
+            mapId={selectedMapId}
+            viewMode={viewMode}
+            graphicsPreset={graphicsPreset}
+            p1CharId={selectedCharId}
+            p2CharId={opponentCharId}
+            p1Name="Ksatria Anda"
+            p2Name={
+              isBotMatch
+                ? diffSublabel
+                : `Lawan ${currentRoom?.code || 'Online'}`
+            }
+            isBotMatch={isBotMatch}
+            botDifficulty={botDifficulty}
+            playerProfile={playerProfile}
+            onProfileUpdated={setPlayerProfile}
+            onExitMatch={() => setCurrentView('lobby')}
+          />
+        </main>
+      )}
 
       {/* Kuil Pemanggilan Gacha Modal */}
       <GachaTempleModal

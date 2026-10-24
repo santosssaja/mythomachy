@@ -67,16 +67,31 @@ export class Mythomachy3DScene {
     container.appendChild(this.renderer.domElement);
 
     // Lights
-    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    this.ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
     this.scene.add(this.ambientLight);
 
-    this.dirLight = new THREE.DirectionalLight(0xfff5e6, 1.2);
+    this.dirLight = new THREE.DirectionalLight(0xfff7e6, 1.4);
     this.dirLight.position.set(5, 12, 7);
     this.dirLight.castShadow = true;
     this.dirLight.shadow.mapSize.width = 1024;
     this.dirLight.shadow.mapSize.height = 1024;
     this.dirLight.shadow.bias = -0.001;
     this.scene.add(this.dirLight);
+
+    // Dynamic Hemisphere Fill for natural ambient light from sky and arena bounce
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x241d3b, 1.0);
+    hemiLight.position.set(0, 15, 0);
+    this.scene.add(hemiLight);
+
+    // Front-Fill Light (Warm camera-facing light so characters' front armor and faces pop)
+    const frontLight = new THREE.DirectionalLight(0xfff1dc, 0.85);
+    frontLight.position.set(0, 5, 12);
+    this.scene.add(frontLight);
+
+    // Back-Rim Silhouette Light (Ensures fighters never blend into dark sky)
+    const rimLight = new THREE.DirectionalLight(0xa594fd, 0.75);
+    rimLight.position.set(0, 7, -8);
+    this.scene.add(rimLight);
 
     // Build Map Environment
     this.scene.add(this.mapGroup);
@@ -152,33 +167,49 @@ export class Mythomachy3DScene {
     this.mapGroup.add(floor);
 
     if (mapId === 'monad_sanctum') {
-      // Sanctum of Monad: Obsidian stone with #6E56CF circuits and floating violet monoliths
-      this.scene.background = new THREE.Color(0x08060f);
-      this.ambientLight.color.set(0x3d2b63);
-      this.ambientLight.intensity = 0.9;
-      this.dirLight.color.set(0x9a84f5);
-      this.dirLight.intensity = 1.2;
+      // Sanctum of Monad: Obsidian stone with refined purple circuits and floating violet monoliths
+      this.scene.background = new THREE.Color(0x0c0a15);
+      this.ambientLight.color.set(0x9d90c9);
+      this.ambientLight.intensity = 1.05;
+      this.dirLight.color.set(0xfff5e6);
+      this.dirLight.intensity = 1.4;
 
-      // Glowing circuit lines on floor
+      // Soft, non-glaring arcane circuits on floor (low contrast, anti-barcode)
       const runeTexCanvas = document.createElement('canvas');
       runeTexCanvas.width = 512;
-      runeTexCanvas.height = 128;
+      runeTexCanvas.height = 256;
       const ctx = runeTexCanvas.getContext('2d')!;
-      ctx.fillStyle = '#0e0b17';
-      ctx.fillRect(0, 0, 512, 128);
-      ctx.strokeStyle = '#6E56CF';
-      ctx.lineWidth = 4;
-      for (let i = 0; i < 512; i += 32) {
+      ctx.clearRect(0, 0, 512, 256);
+
+      ctx.strokeStyle = 'rgba(110, 86, 207, 0.25)';
+      ctx.lineWidth = 2;
+
+      // Soft circular ritual array
+      ctx.beginPath();
+      ctx.arc(256, 128, 70, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(256, 128, 100, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Widely spaced, subtle geometric lines
+      for (let i = 0; i < 512; i += 96) {
         ctx.beginPath();
         ctx.moveTo(i, 0);
-        ctx.lineTo(i + 16, 64);
         ctx.lineTo(i + 32, 128);
+        ctx.lineTo(i, 256);
         ctx.stroke();
       }
+
       const runeTex = new THREE.CanvasTexture(runeTexCanvas);
       runeTex.wrapS = THREE.RepeatWrapping;
-      runeTex.repeat.set(4, 1);
-      const runeMat = new THREE.MeshBasicMaterial({ map: runeTex, transparent: true, opacity: 0.75 });
+      runeTex.repeat.set(2, 1);
+      const runeMat = new THREE.MeshBasicMaterial({
+        map: runeTex,
+        transparent: true,
+        opacity: 0.45,
+        blending: THREE.AdditiveBlending
+      });
       const runePlane = new THREE.Mesh(new THREE.PlaneGeometry(30, 8), runeMat);
       runePlane.rotation.x = -Math.PI / 2;
       runePlane.position.set(0, 0.01, 0);
@@ -456,6 +487,29 @@ export class Mythomachy3DScene {
 
     this.renderer.setSize(width, height);
   };
+
+  /**
+   * Project a 3D world position to 2D screen coordinates (pixels relative to canvas)
+   */
+  public projectToScreen(worldX: number, worldY: number, worldZ: number = 0): { x: number; y: number } | null {
+    const camera = this.viewMode === '3D' ? this.perspectiveCamera : this.orthoCamera;
+    const canvas = this.renderer.domElement;
+    if (!canvas) return null;
+
+    const vector = new THREE.Vector3(worldX, worldY, worldZ);
+    vector.project(camera);
+
+    // If point is behind the camera in perspective mode
+    if (this.viewMode === '3D' && vector.z > 1) {
+      return null;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    const x = (vector.x * 0.5 + 0.5) * rect.width;
+    const y = (-(vector.y * 0.5) + 0.5) * rect.height;
+
+    return { x, y };
+  }
 
   public destroy() {
     window.removeEventListener('resize', this.onResize);

@@ -8,7 +8,9 @@ import {
   IconUser,
   IconCopy,
   IconCheck,
-  IconRelicShard
+  IconRelicShard,
+  IconGemJade,
+  IconFiligreeCorner
 } from './SvgIcons';
 import { soundEngine } from '../audio/soundEngine';
 
@@ -19,6 +21,7 @@ interface LobbyViewProps {
   onSelectDifficulty: (diff: AIDifficulty) => void;
   onSelectRoom: (room: RoomInfo) => void;
   onOpenHelp: () => void;
+  onAdvanceTab?: () => void;
 }
 
 export const LobbyView: React.FC<LobbyViewProps> = ({
@@ -27,7 +30,8 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   botDifficulty,
   onSelectDifficulty,
   onSelectRoom,
-  onOpenHelp
+  onOpenHelp,
+  onAdvanceTab
 }) => {
   const [activeTab, setActiveTab] = useState<'bot' | 'pvp'>('bot');
   const [publicRooms, setPublicRooms] = useState<RoomInfo[]>([]);
@@ -50,6 +54,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
     setCreatedRoom(room);
     setPublicRooms(getPublicRooms());
     onSelectRoom(room);
+    onAdvanceTab?.();
   };
 
   const handleCopyLink = () => {
@@ -88,9 +93,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   ];
 
   return (
-    <div className="w-full space-y-6 text-left">
+    <div className="card-surface p-5 sm:p-6 flex-1 min-h-0 flex flex-col justify-start space-y-4 text-left shadow-2xl overflow-hidden">
       {/* Top Header Controls with Segmented Switch */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#2D2842]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3.5 border-b border-[#2D2842] flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-xl bg-[#6E56CF]/20 border border-[#6E56CF]/40 text-[#D4AF37]">
             <IconSwords size={20} color="#D4AF37" />
@@ -102,7 +107,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               </h2>
               <button
                 onClick={onOpenHelp}
-                className="help-btn"
+                className="help-btn-ornate"
                 title="Bantuan Ruang Tunggu"
               >
                 ?
@@ -115,15 +120,15 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
         </div>
 
         {/* Segmented Switch: Lawan Bot Cerdas / Ruang Antrean Pemain with padding: 8px 18px */}
-        <div className="flex items-center gap-1.5 bg-[#0B0A0F] p-1.5 rounded-xl border border-[#2D2842] self-start sm:self-auto">
+        <div className="flex items-center gap-1.5 bg-[#0B0A0F] p-1.5 rounded-xl border border-[#2D2842] self-start sm:self-auto shadow-inner">
           <button
             onClick={() => {
               soundEngine.playClickSound();
               setActiveTab('bot');
             }}
-            className={`flex items-center gap-2 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'bot'
-                ? 'bg-[#6E56CF] text-white shadow-md shadow-[#6E56CF]/40'
+                ? 'bg-gradient-to-r from-[#6E56CF] to-[#4D38A2] text-white shadow-md shadow-[#6E56CF]/40 border border-[#9D88F5]/40'
                 : 'text-[#9E98B0] hover:text-[#F4F2F7]'
             }`}
             style={{ padding: '8px 18px' }}
@@ -136,9 +141,9 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               soundEngine.playClickSound();
               setActiveTab('pvp');
             }}
-            className={`flex items-center gap-2 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'pvp'
-                ? 'bg-[#6E56CF] text-white shadow-md shadow-[#6E56CF]/40'
+                ? 'bg-gradient-to-r from-[#6E56CF] to-[#4D38A2] text-white shadow-md shadow-[#6E56CF]/40 border border-[#9D88F5]/40'
                 : 'text-[#9E98B0] hover:text-[#F4F2F7]'
             }`}
             style={{ padding: '8px 18px' }}
@@ -149,30 +154,32 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
         </div>
       </div>
 
-      {/* Mode 1: Bot Mythomachy Difficulty Cards */}
-      {activeTab === 'bot' && (
-        <div className="space-y-4">
-          <label className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] block font-cinzel">
-            Tingkat Kesulitan Bot Cerdas:
-          </label>
+      {/* Scrollable Content Container for Bot and PvP Modes */}
+      <div className="card-grid-container flex-1 min-h-0 overflow-y-auto pr-2 space-y-4">
+        {/* Mode 1: Bot Mythomachy Difficulty Gate Cards */}
+        {activeTab === 'bot' && (
+          <div className="space-y-4">
+            <label className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] block font-cinzel">
+              Tingkat Kesulitan Bot Cerdas:
+            </label>
 
-          <div
-            className="grid grid-cols-1 md:grid-cols-3"
-            style={{ gap: '16px' }}
-          >
+            <div
+              className="grid grid-cols-1 md:grid-cols-3"
+              style={{ gap: '16px' }}
+            >
             {difficultyList.map(d => {
               const isSelected = botDifficulty === d.id;
+              const isRecommended = d.id === 'medium';
               return (
                 <div
                   key={d.id}
                   onClick={() => {
                     soundEngine.playClickSound();
                     onSelectDifficulty(d.id);
+                    onAdvanceTab?.();
                   }}
-                  className={`rounded-2xl border text-left transition-all duration-200 cursor-pointer relative group ${
-                    isSelected
-                      ? 'bg-gradient-to-b from-[#1F1B2E] to-[#14121D] border-[#D4AF37] shadow-xl shadow-[#D4AF37]/15 ring-1 ring-[#D4AF37]'
-                      : 'bg-[#14121D] border-[#2D2842] text-[#9E98B0] hover:border-[#6E56CF]/60 hover:-translate-y-1'
+                  className={`gate-card card-surface card-interactive rounded-2xl border text-left transition-all duration-300 cursor-pointer relative group ${
+                    isSelected ? 'selected card-selected-gold' : ''
                   }`}
                   style={{
                     padding: '24px',
@@ -182,19 +189,34 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                     justifyContent: 'space-between'
                   }}
                 >
+                  {/* Faint Watermark Background Text */}
+                  <div className="gate-card-watermark">
+                    {d.id === 'easy' ? 'SANTAI' : d.id === 'medium' ? 'TAKTIS' : 'LEGENDA'}
+                  </div>
+
                   {/* Top content */}
-                  <div>
-                    {/* Badge */}
-                    <div style={{ marginBottom: '8px' }}>
-                      <span
-                        className={`inline-block text-[11px] font-bold uppercase tracking-wider rounded border ${d.badgeColor}`}
-                        style={{ padding: '4px 12px' }}
-                      >
-                        {d.badge}
-                      </span>
+                  <div className="relative z-10">
+                    {/* Prestigious Recommended Gold Badge or Difficulty Badge */}
+                    <div style={{ marginBottom: '10px' }}>
+                      {isRecommended ? (
+                        <span
+                          className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider rounded-md border border-[#FFE484] bg-gradient-to-r from-[#D4AF37] via-[#F5D77F] to-[#AA8518] text-[#0B0A0F] shadow-[0_2px_10px_rgba(212,175,55,0.4)]"
+                          style={{ padding: '4px 12px' }}
+                        >
+                          <IconSwords size={12} color="#0B0A0F" />
+                          Direkomendasikan
+                        </span>
+                      ) : (
+                        <span
+                          className={`inline-block text-[11px] font-bold uppercase tracking-wider rounded border ${d.badgeColor}`}
+                          style={{ padding: '4px 12px' }}
+                        >
+                          {d.badge}
+                        </span>
+                      )}
                     </div>
 
-                    <h4 className="font-bold text-base font-cinzel text-[#F4F2F7] mt-1">
+                    <h4 className="font-bold text-base font-cinzel text-[#F4F2F7] mt-1 tracking-wide">
                       {d.label}
                     </h4>
 
@@ -205,7 +227,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
 
                   {/* Clean Divider Line separating description from reward and status */}
                   <div
-                    className="flex items-center justify-between text-xs"
+                    className="relative z-10 flex items-center justify-between text-xs"
                     style={{
                       borderTop: '1px solid #2D2842',
                       paddingTop: '12px',
@@ -213,10 +235,10 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                     }}
                   >
                     <span className="text-[#2E9E6B] font-semibold flex items-center gap-1.5 font-mono">
-                      <IconRelicShard size={14} color="#2E9E6B" /> +{d.relicReward} Pecahan Menang
+                      <IconGemJade size={14} color="#2E9E6B" /> +{d.relicReward} Pecahan Menang
                     </span>
                     <span
-                      className={`font-cinzel font-bold text-xs ${
+                      className={`font-cinzel font-bold text-xs tracking-wider ${
                         isSelected ? 'text-[#D4AF37]' : 'text-[#9E98B0] group-hover:text-white'
                       }`}
                     >
@@ -315,6 +337,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                         onClick={() => {
                           soundEngine.playClickSound();
                           onSelectRoom(createdRoom);
+                          onAdvanceTab?.();
                         }}
                         className="mt-2 px-4 py-2 rounded-lg btn-primary text-xs font-bold font-cinzel"
                       >
@@ -355,6 +378,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                         onClick={() => {
                           soundEngine.playClickSound();
                           onSelectRoom(r);
+                          onAdvanceTab?.();
                         }}
                         className="px-4 py-2 rounded-lg btn-primary text-xs font-bold font-cinzel"
                       >
@@ -371,6 +395,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                   soundEngine.playClickSound();
                   const targetRoom = publicRooms[0] || createNewRoom(selectedMapId, false, 'QUICK8');
                   onSelectRoom(targetRoom);
+                  onAdvanceTab?.();
                 }}
                 className="w-full py-3 rounded-xl btn-gold text-xs font-black font-cinzel shadow-lg shadow-[#D4AF37]/20"
               >
@@ -380,6 +405,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

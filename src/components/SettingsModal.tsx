@@ -37,11 +37,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg panel-frame p-6 rounded-2xl border gold-border text-left shadow-2xl">
+      <div className="relative w-full max-w-lg modal-container panel-frame rounded-2xl border gold-border text-left shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#2D2842]">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[#6E56CF]/20 border border-[#6E56CF]/40 text-[#D4AF37]">
+            <div className="p-2.5 rounded-xl bg-[#6E56CF]/20 border border-[#6E56CF]/40 text-[#D4AF37]">
               <IconSettings size={20} color="#D4AF37" />
             </div>
             <div>
@@ -51,7 +51,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </h3>
                 <button
                   onClick={onOpenHelp}
-                  className="help-btn"
+                  className="help-btn-ornate"
                   title="Bantuan Pengaturan Grafis"
                 >
                   ?
@@ -64,20 +64,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#9E98B0] hover:text-white hover:bg-[#1F1B2E] transition-colors"
+            className="p-2 rounded-lg text-[#9E98B0] hover:text-white hover:bg-[#1F1B2E] transition-colors"
           >
             <IconClose size={20} />
           </button>
         </div>
 
         {/* Body */}
-        <div className="py-5 space-y-5 text-sm">
+        <div className="space-y-4 text-sm">
           {/* View Mode 2D / 3D */}
-          <div className="p-4 rounded-xl bg-[#0B0A0F]/70 border border-[#2D2842] flex items-center justify-between">
+          <div className="setting-row bg-[#0B0A0F]/70 border border-[#2D2842] flex items-center justify-between gap-4">
             <div>
-              <span className="font-bold text-[#F4F2F7] block">Sudut Pandang Kamera</span>
-              <span className="text-xs text-[#9E98B0]">
-                Beralih bebas antara perspektif 3D atau tampilan samping datar 2D
+              <span className="font-bold text-[#F4F2F7] block text-sm">Sudut Pandang Kamera</span>
+              <span className="text-xs text-[#9E98B0] mt-0.5 block">
+                Beralih bebas antara perspektif 3D dinamis atau 2D samping
               </span>
             </div>
             <button
@@ -85,7 +85,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 soundEngine.playClickSound();
                 onToggleViewMode();
               }}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg btn-primary text-xs font-bold"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl btn-primary text-xs font-bold shrink-0"
             >
               <IconEye size={15} />
               <span>Mode {viewMode}</span>
@@ -93,16 +93,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* Audio Mute */}
-          <div className="p-4 rounded-xl bg-[#0B0A0F]/70 border border-[#2D2842] flex items-center justify-between">
+          <div className="setting-row bg-[#0B0A0F]/70 border border-[#2D2842] flex items-center justify-between gap-4">
             <div>
-              <span className="font-bold text-[#F4F2F7] block">Efek Suara Sintetis</span>
-              <span className="text-xs text-[#9E98B0]">
-                Synthesizer Web Audio API tanpa perlu file eksternal
+              <span className="font-bold text-[#F4F2F7] block text-sm">Efek Suara (SFX)</span>
+              <span className="text-xs text-[#9E98B0] mt-0.5 block">
+                Aktifkan suara benturan serangan, jurus, dan interaksi menu
               </span>
             </div>
             <button
               onClick={onToggleMute}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-xs font-bold transition-all ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all shrink-0 ${
                 isMuted
                   ? 'bg-[#14121D] border-[#2D2842] text-[#9E98B0]'
                   : 'bg-[#2E9E6B]/20 border-[#2E9E6B] text-[#2E9E6B]'
@@ -114,11 +114,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
 
           {/* Graphics Presets */}
-          <div className="space-y-2">
+          <div className="space-y-2 pt-1">
             <label className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] block font-cinzel">
               Kualitas Grafis:
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {presets.map(p => {
                 const active = preset === p.id;
                 return (
@@ -128,7 +128,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       soundEngine.playClickSound();
                       onSelectPreset(p.id);
                     }}
-                    className={`p-3 rounded-xl border text-left transition-all ${
+                    className={`graphics-card border text-left transition-all cursor-pointer ${
                       active
                         ? 'bg-[#6E56CF]/20 border-[#D4AF37] text-white shadow-lg shadow-[#6E56CF]/20'
                         : 'bg-[#14121D] border-[#2D2842] text-[#9E98B0] hover:border-[#6E56CF]/40'
@@ -151,9 +151,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         <div className="pt-3 border-t border-[#2D2842] flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2 rounded-lg btn-primary text-xs uppercase tracking-wider font-cinzel"
+            className="px-6 py-2.5 rounded-xl btn-primary text-xs uppercase tracking-wider font-cinzel font-bold shadow-md cursor-pointer"
           >
-            Tutup
+            Selesai
           </button>
         </div>
       </div>

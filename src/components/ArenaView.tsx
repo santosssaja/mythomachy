@@ -363,6 +363,73 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
     ]).catch(() => {});
   };
 
+  const handleRematch = () => {
+    soundEngine.playMatchStartSound();
+    const freshP1: FighterSimState = {
+      id: 'player1',
+      characterId: p1CharId,
+      x: -3.5,
+      y: 0,
+      z: 0,
+      vx: 0,
+      vy: 0,
+      vz: 0,
+      hp: p1Char.maxHp,
+      maxHp: p1Char.maxHp,
+      energy: 40,
+      facing: 1,
+      state: 'IDLE',
+      stateTimer: 0,
+      attackHitRegistered: false,
+      skillCooldownRemaining: 0,
+      ultimateCooldownRemaining: 0,
+      isBlocking: false,
+      damageReductionBuff: 0,
+      damageReductionTimer: 0,
+      slowTimer: 0,
+      slowFactor: 1.0,
+      rootTimer: 0,
+      radius: p1Char.radius,
+      comboCount: 0,
+      lastHitTime: 0
+    };
+    const freshP2: FighterSimState = {
+      id: 'player2',
+      characterId: p2CharId,
+      x: 3.5,
+      y: 0,
+      z: 0,
+      vx: 0,
+      vy: 0,
+      vz: 0,
+      hp: p2Char.maxHp,
+      maxHp: p2Char.maxHp,
+      energy: 30,
+      facing: -1,
+      state: 'IDLE',
+      stateTimer: 0,
+      attackHitRegistered: false,
+      skillCooldownRemaining: 0,
+      ultimateCooldownRemaining: 0,
+      isBlocking: false,
+      damageReductionBuff: 0,
+      damageReductionTimer: 0,
+      slowTimer: 0,
+      slowFactor: 1.0,
+      rootTimer: 0,
+      radius: p2Char.radius,
+      comboCount: 0,
+      lastHitTime: 0
+    };
+    p1Ref.current = freshP1;
+    p2Ref.current = freshP2;
+    setP1State(freshP1);
+    setP2State(freshP2);
+    setWinner(null);
+    setMatchIntro('LAGA DIMULAI!');
+    setTimeout(() => setMatchIntro(''), 1500);
+  };
+
   const handlePlayerOnScreenAction = (action: 'ATTACK' | 'SKILL' | 'ULTIMATE' | 'BLOCK' | 'DASH' | 'JUMP') => {
     const p1 = p1Ref.current;
     if (p1.hp <= 0 || winner) return;
@@ -402,7 +469,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
   };
 
   return (
-    <div className={`relative w-full h-[82vh] min-h-[550px] bg-[#0B0A0F] rounded-2xl overflow-hidden border border-[#2D2842] shadow-2xl ${isShaking ? 'shake-screen' : ''}`}>
+    <div className={`relative w-full h-[calc(100vh-110px)] min-h-[460px] max-h-[720px] bg-[#0B0A0F] rounded-2xl overflow-hidden border border-[#2D2842] shadow-2xl ${isShaking ? 'shake-screen' : ''}`}>
       {/* Three.js Canvas Container */}
       <div ref={containerRef} className="w-full h-full" />
 
@@ -433,22 +500,39 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
       )}
 
       {/* Floating Damage Text Overlay */}
-      <div className="absolute inset-0 pointer-events-none z-20">
-        {damageTexts.map(dt => (
-          <div
-            key={dt.id}
-            className="absolute font-cinzel font-black text-sm sm:text-base animate-bounce"
-            style={{
-              left: `${50 + (dt.x / 14) * 45}%`,
-              top: `${55 - dt.y * 12}%`,
-              color: dt.color,
-              opacity: dt.life,
-              textShadow: '0 2px 8px rgba(0,0,0,0.9)'
-            }}
-          >
-            {dt.text}
-          </div>
-        ))}
+      <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+        {damageTexts.map(dt => {
+          let x = 0;
+          let y = 0;
+          let isVisible = true;
+          if (sceneRef.current) {
+            const screenPos = sceneRef.current.projectToScreen(dt.x, dt.y, 0);
+            if (screenPos) {
+              x = screenPos.x;
+              y = screenPos.y;
+            } else {
+              isVisible = false;
+            }
+          }
+          if (!isVisible) return null;
+
+          return (
+            <div
+              key={dt.id}
+              className="absolute font-cinzel font-black text-sm sm:text-base pointer-events-none animate-bounce"
+              style={{
+                left: `${x}px`,
+                top: `${y}px`,
+                transform: 'translate(-50%, -50%)',
+                color: dt.color,
+                opacity: dt.life,
+                textShadow: '0 2px 8px rgba(0,0,0,0.95), 0 0 10px rgba(217, 56, 58, 0.6)'
+              }}
+            >
+              {dt.text}
+            </div>
+          );
+        })}
       </div>
 
       {/* In-Game HUD Controls */}
@@ -465,10 +549,17 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
       {winner && (
         <VictoryModal
           winnerId={winner}
-          winnerName={winner === 'player1' ? p1Name : p2Name}
+          winnerName={
+            winner === 'player1'
+              ? p1Name
+              : isBotMatch
+              ? `Bot Mythomachy (${p2Name})`
+              : p2Name
+          }
           winnerChar={winner === 'player1' ? p1Char : p2Char}
           isP1Winner={winner === 'player1'}
           onReturnToLobby={onExitMatch}
+          onRematch={handleRematch}
           relicsAwarded={!isBotMatch ? 25 : botDifficulty === 'easy' ? 10 : botDifficulty === 'medium' ? 20 : 35}
         />
       )}

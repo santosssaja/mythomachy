@@ -50,8 +50,8 @@ export const JudgeVerificationBar: React.FC<JudgeVerificationBarProps> = ({ onOp
   };
 
   return (
-    <aside aria-label="Panel Verifikasi Juri Monad Testnet" className="w-full bg-[#14121D]/95 border-t-2 border-[#D4AF37] px-4 py-3 fixed bottom-0 left-0 right-0 z-40 shadow-2xl backdrop-blur-md animate-slide-up">
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-3 text-xs">
+    <aside aria-label="Panel Verifikasi Juri Monad Testnet" className="flex-shrink-0 w-full bg-[#14121D]/95 border-t-2 border-[#D4AF37] px-4 py-2.5 z-40 shadow-2xl backdrop-blur-md animate-slide-up">
+      <div className="max-w-[1520px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-3 text-xs">
         {/* Left: Section Header & Presentation Speech Badge */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export const JudgeVerificationBar: React.FC<JudgeVerificationBarProps> = ({ onOp
           </div>
           <button
             onClick={onOpenHelp}
-            className="help-btn"
+            className="help-btn-ornate"
             title="Penjelasan Panel Verifikasi"
           >
             ?

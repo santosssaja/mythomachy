@@ -31,6 +31,21 @@ export const IconLightning: React.FC<IconProps> = ({ className, size = 20, color
   </svg>
 );
 
+export const IconFlame: React.FC<IconProps> = ({ className, size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z" />
+  </svg>
+);
+
+export const IconFuel: React.FC<IconProps> = ({ className, size = 18, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <line x1="3" y1="22" x2="15" y2="22" />
+    <line x1="4" y1="9" x2="14" y2="9" />
+    <path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18" />
+    <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5" />
+  </svg>
+);
+
 export const IconTemple: React.FC<IconProps> = ({ className, size = 20, color = 'currentColor' }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M2 20h20" />
@@ -166,5 +181,78 @@ export const IconEye: React.FC<IconProps> = ({ className, size = 20, color = 'cu
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
     <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+export const IconGemJade: React.FC<IconProps> = ({ className, size = 18, color = '#2E9E6B' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <polygon points="6 3 18 3 22 9 12 22 2 9 6 3" stroke={color} strokeWidth="1.5" fill="rgba(46, 158, 107, 0.25)" />
+    <polyline points="2 9 12 9 22 9" stroke={color} strokeWidth="1.2" />
+    <polyline points="6 3 12 9 18 3" stroke={color} strokeWidth="1.2" />
+    <line x1="12" y1="9" x2="12" y2="22" stroke={color} strokeWidth="1.2" />
+    <line x1="6" y1="3" x2="12" y2="22" stroke={color} strokeWidth="0.8" opacity="0.6" />
+    <line x1="18" y1="3" x2="12" y2="22" stroke={color} strokeWidth="0.8" opacity="0.6" />
+  </svg>
+);
+
+export const IconWeaponGlyphLeft: React.FC<IconProps> = ({ className, size = 16, color = '#D4AF37' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M3 12h14" />
+    <path d="M12 5l7 7-7 7" />
+    <path d="M5 8l-3 4 3 4" />
+  </svg>
+);
+
+export const IconWeaponGlyphRight: React.FC<IconProps> = ({ className, size = 16, color = '#D4AF37' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M21 12H7" />
+    <path d="M12 5l-7 7 7 7" />
+    <path d="M19 8l3 4-3 4" />
+  </svg>
+);
+
+export const IconFiligreeCorner: React.FC<IconProps & { position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' }> = ({
+  className,
+  size = 20,
+  color = '#D4AF37',
+  position = 'top-left'
+}) => {
+  const rotation =
+    position === 'top-right'
+      ? 'rotate(90deg)'
+      : position === 'bottom-right'
+      ? 'rotate(180deg)'
+      : position === 'bottom-left'
+      ? 'rotate(270deg)'
+      : 'none';
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      style={{ transform: rotation, pointerEvents: 'none' }}
+    >
+      <path d="M2 2h8a4 4 0 0 1 4 4v2" />
+      <path d="M2 2v8a4 4 0 0 0 4 4h2" />
+      <circle cx="5" cy="5" r="1.5" fill={color} />
+      <path d="M2 14v4a2 2 0 0 0 2 2h4" opacity="0.6" />
+      <line x1="2" y1="2" x2="8" y2="8" opacity="0.7" />
+    </svg>
+  );
+};
+
+export const IconRefresh: React.FC<IconProps> = ({ className, size = 18, color = 'currentColor' }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+    <path d="M3 3v5h5" />
+    <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+    <path d="M16 21h5v-5" />
   </svg>
 );

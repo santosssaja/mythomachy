@@ -70,7 +70,7 @@ export const MAPS: Record<MapId, MapDef> = {
     numericId: 0,
     name: 'Sanctum of Monad',
     subtitle: 'Altar Kristal Monad',
-    description: 'Lantai batu obsidian dengan ukiran sirkuit bercahaya ungu #6E56CF dan monolit kristal berputar di udara.',
+    description: 'Lantai batu obsidian kuno berukir sirkuit kosmis bercahaya ungu mistis dengan monolit kristal melayang berputar di udara.',
     themeColor: '#6E56CF',
     hasForegroundObstacles: false
   },
@@ -79,7 +79,7 @@ export const MAPS: Record<MapId, MapDef> = {
     numericId: 1,
     name: 'Primeval Othrys',
     subtitle: 'Kuil Mitologi Purba',
-    description: 'Kuil marmer klasik kuno yang dikelilingi pepohonan rimbun di sekeliling arena termasuk pohon foreground berfitur transparansi otomatis.',
+    description: 'Kuil marmer klasik kuno megah yang dikelilingi pepohonan rimbun asri di sekeliling arena dengan atmosfer fajar peradaban mitologi.',
     themeColor: '#D4AF37',
     hasForegroundObstacles: true
   },

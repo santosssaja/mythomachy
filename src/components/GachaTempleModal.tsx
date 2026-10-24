@@ -80,11 +80,11 @@ export const GachaTempleModal: React.FC<GachaTempleModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-3xl panel-frame p-6 sm:p-8 rounded-2xl border gold-border text-left shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-3xl modal-container panel-frame rounded-2xl border gold-border text-left shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#2D2842] flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#6E56CF]/20 border border-[#6E56CF]/40 text-[#D4AF37]">
+            <div className="p-2.5 rounded-xl bg-[#6E56CF]/20 border border-[#6E56CF]/40 text-[#D4AF37]">
               <IconTemple size={22} color="#D4AF37" />
             </div>
             <div>
@@ -94,7 +94,7 @@ export const GachaTempleModal: React.FC<GachaTempleModalProps> = ({
                 </h2>
                 <button
                   onClick={onOpenHelp}
-                  className="help-btn"
+                  className="help-btn-ornate"
                   title="Bantuan Kuil Pemanggilan"
                 >
                   ?
@@ -114,12 +114,12 @@ export const GachaTempleModal: React.FC<GachaTempleModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="py-6 overflow-y-auto space-y-6 flex-grow">
+        <div className="py-4 overflow-y-auto space-y-5 flex-grow pr-1">
           {/* Pity Progress Indicator & Relic Shards Counter */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Pity Progress */}
-            <div className="p-4 rounded-xl bg-[#0B0A0F]/80 border border-[#2D2842] flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-2">
+            <div className="setting-row bg-[#0B0A0F]/80 border border-[#2D2842] flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-2.5">
                 <span className="text-xs uppercase tracking-wider text-[#9E98B0] font-semibold">
                   Jaminan Legenda Puncak:
                 </span>
@@ -127,27 +127,27 @@ export const GachaTempleModal: React.FC<GachaTempleModalProps> = ({
                   Tarikan ke-{playerProfile.pityCounter + 1} dari 4
                 </span>
               </div>
-              {/* Progress bar */}
-              <div className="w-full bg-[#1F1B2E] h-2.5 rounded-full overflow-hidden border border-[#2D2842]">
+              {/* Vibrant Glowing Progress Bar with Visual Step Fill (25%/50%/75%/100%) */}
+              <div className="w-full bg-[#1F1B2E] h-3 rounded-full overflow-hidden border border-[#2D2842] p-[1.5px]">
                 <div
-                  className="h-full bg-gradient-to-r from-[#6E56CF] to-[#D4AF37] transition-all duration-500 rounded-full"
-                  style={{ width: `${((playerProfile.pityCounter) / 4) * 100}%` }}
+                  className="h-full bg-gradient-to-r from-[#6E56CF] via-[#9D88F5] to-[#D4AF37] transition-all duration-500 rounded-full shadow-[0_0_12px_rgba(212,175,55,0.7)]"
+                  style={{ width: `${Math.min(100, ((playerProfile.pityCounter + 1) / 4) * 100)}%` }}
                 />
               </div>
-              <span className="text-[11px] text-[#9E98B0] mt-2">
+              <span className="text-[11px] text-[#9E98B0] mt-2 leading-relaxed">
                 Pasti mendapatkan karakter baru pada tarikan ke-4 jika belum diperoleh.
               </span>
             </div>
 
             {/* Relic Shards */}
-            <div className="p-4 rounded-xl bg-[#0B0A0F]/80 border border-[#2D2842] flex items-center justify-between">
+            <div className="setting-row bg-[#0B0A0F]/80 border border-[#2D2842] flex items-center justify-between">
               <div>
                 <span className="text-xs uppercase tracking-wider text-[#9E98B0] font-semibold block mb-1">
                   Pecahan Relik Dimiliki:
                 </span>
                 <div className="flex items-center gap-2">
                   <IconRelicShard size={22} color="#D4AF37" />
-                  <span className="text-xl font-black text-[#D4AF37] font-cinzel">
+                  <span className="text-2xl font-black text-[#D4AF37] font-cinzel">
                     {playerProfile.relicShards}
                   </span>
                   <span className="text-xs text-[#9E98B0]">/ 75 untuk tukar otomatis</span>
@@ -167,14 +167,14 @@ export const GachaTempleModal: React.FC<GachaTempleModalProps> = ({
                 return (
                   <div
                     key={char.id}
-                    className={`p-3.5 rounded-xl border transition-all ${
+                    className={`legend-card border transition-all ${
                       unlocked
                         ? 'bg-[#1F1B2E]/90 border-[#D4AF37]/50 shadow-md shadow-[#D4AF37]/10'
                         : 'bg-[#14121D]/70 border-[#2D2842] opacity-75'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-[#D4AF37] px-2 py-0.5 rounded bg-[#D4AF37]/10 border border-[#D4AF37]/30">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-[#D4AF37] px-2.5 py-0.5 rounded bg-[#D4AF37]/10 border border-[#D4AF37]/30">
                         {char.origin}
                       </span>
                       {unlocked ? (
@@ -195,7 +195,7 @@ export const GachaTempleModal: React.FC<GachaTempleModalProps> = ({
                       {char.title}
                     </p>
 
-                    <div className="text-[11px] space-y-1 bg-[#0B0A0F]/60 p-2 rounded-lg border border-[#2D2842]/60">
+                    <div className="summon-stat-box bg-[#0B0A0F]/60 rounded-lg border border-[#2D2842]/60 space-y-1.5 text-[11px]">
                       <div className="flex justify-between">
                         <span className="text-[#9E98B0]">Vitalitas:</span>
                         <span className="font-bold text-[#F4F2F7]">{char.maxHp} HP</span>
@@ -269,7 +269,7 @@ export const GachaTempleModal: React.FC<GachaTempleModalProps> = ({
           )}
         </div>
 
-        {/* Footer Action */}
+        {/* Footer Action with High-Impact [❖ 20] Gold CTA Button */}
         <div className="pt-4 border-t border-[#2D2842] flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
           <span className="text-xs text-[#9E98B0]">
             Peluang dasar: 35% | Jaminan Pasti: Tarikan ke-4 atau 75 Pecahan Relik
@@ -278,9 +278,13 @@ export const GachaTempleModal: React.FC<GachaTempleModalProps> = ({
           <button
             onClick={handleSummon}
             disabled={summoning}
-            className="w-full sm:w-auto px-8 py-3 rounded-xl btn-gold text-sm font-black font-cinzel shadow-xl"
+            className="btn-summon-cta w-full sm:w-auto text-sm font-black font-cinzel shadow-xl cursor-pointer"
           >
-            {summoning ? 'Memanggil...' : 'Lakukan Pemanggilan'}
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#0B0B12]/20 border border-[#0B0B12]/30 font-mono text-xs font-bold">
+              <IconRelicShard size={14} color="#0B0B12" />
+              20
+            </span>
+            <span>{summoning ? 'MEMANGGIL...' : 'LAKUKAN PEMANGGILAN'}</span>
           </button>
         </div>
       </div>

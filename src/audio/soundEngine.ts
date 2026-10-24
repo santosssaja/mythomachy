@@ -366,6 +366,33 @@ class SoundEngine {
       osc.stop(t + 1.2);
     });
   }
+
+  // Countdown Beep (Clean metallic chime for 3, 2, 1)
+  public playCountdownBeep(isFinal: boolean = false) {
+    if (this.isMuted) return;
+    this.initContext();
+    if (!this.ctx || !this.masterGain) return;
+
+    if (isFinal) {
+      this.playMatchStartSound();
+      return;
+    }
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, t); // D5 pitch
+    gain.gain.setValueAtTime(0.45, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+
+    osc.start(t);
+    osc.stop(t + 0.28);
+  }
 }
 
 export const soundEngine = new SoundEngine();

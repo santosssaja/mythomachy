@@ -53,7 +53,7 @@ Mythomachy menghadirkan pengalaman pertarungan mitologi real-time 60 FPS tanpa j
 
 1. **Kloning Repositori**:
    ```bash
-   git clone https://github.com/santoso/Mythomachy.git
+   git clone https://github.com/santosssaja/Mythomachy.git
    cd Mythomachy
    ```
 
@@ -122,7 +122,7 @@ Mythomachy menghadirkan pengalaman pertarungan mitologi real-time 60 FPS tanpa j
 
 > *"Halo para juri dan komunitas Monad. Ini adalah **Mythomachy: Clash of Legends**, sebuah game pertarungan mitologi real-time yang sepenuhnya terintegrasi dengan **Monad Testnet** di Chain ID 10143.*  
 > *Kami memanfaatkan keunggulan terkuat Monad: waktu blok 0,3 detik dan metode `eth_sendRawTransactionSync` sehingga transaksi on-chain terjadi seketika di bawah 600 milidetik tanpa merusak keseruan bermain.*  
-> *Kode kontrak kami `MythomachyArena.sol` telah terverifikasi di alamat `0x8E1256B48bF729F4a0a19Ccf22b827e81D3910A3` di testnet.monadexplorer.com dan seluruh kode sumber terbuka di github.com/santoso/Mythomachy.*  
+> *Kode kontrak kami `MythomachyArena.sol` telah terverifikasi di alamat `0x8E1256B48bF729F4a0a19Ccf22b827e81D3910A3` di testnet.monadexplorer.com dan seluruh kode sumber terbuka di github.com/santosssaja/Mythomachy.*  
 > *Mari kita uji langsung dengan satu klik pada bilah verifikasi juri: lihat latensi transaksi yang dicapai secara langsung!"*
 
 ---

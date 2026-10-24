@@ -117,18 +117,57 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
 
   const [winner, setWinner] = useState<'player1' | 'player2' | null>(null);
   const [damageTexts, setDamageTexts] = useState(combatEffects.getTexts());
-  const [matchIntro, setMatchIntro] = useState<string>('BERSIAP...');
+  const [countdown, setCountdown] = useState<number | null>(3);
+  const [countdownText, setCountdownText] = useState<string>('3');
+  const [isMatchStarted, setIsMatchStarted] = useState<boolean>(false);
+  const isMatchStartedRef = useRef<boolean>(false);
   const [skillBanner, setSkillBanner] = useState<{ text: string; color: string } | null>(null);
   const [isShaking, setIsShaking] = useState(false);
 
-  // Trigger match start intro sequence
-  useEffect(() => {
-    const t1 = setTimeout(() => setMatchIntro('LAGA DIMULAI!'), 900);
-    const t2 = setTimeout(() => setMatchIntro(''), 1800);
+  // Trigger match start countdown sequence (3 -> 2 -> 1 -> BERTARUNG!)
+  const startCountdownSequence = () => {
+    isMatchStartedRef.current = false;
+    setIsMatchStarted(false);
+    setCountdown(3);
+    setCountdownText('3');
+    soundEngine.playCountdownBeep(false);
+
+    const t1 = setTimeout(() => {
+      setCountdown(2);
+      setCountdownText('2');
+      soundEngine.playCountdownBeep(false);
+    }, 1000);
+
+    const t2 = setTimeout(() => {
+      setCountdown(1);
+      setCountdownText('1');
+      soundEngine.playCountdownBeep(false);
+    }, 2000);
+
+    const t3 = setTimeout(() => {
+      setCountdown(0);
+      setCountdownText('BERTARUNG!');
+      soundEngine.playCountdownBeep(true);
+      isMatchStartedRef.current = true;
+      setIsMatchStarted(true);
+      triggerScreenShake();
+    }, 3000);
+
+    const t4 = setTimeout(() => {
+      setCountdown(null);
+    }, 4200);
+
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
+      clearTimeout(t3);
+      clearTimeout(t4);
     };
+  };
+
+  useEffect(() => {
+    const cancel = startCountdownSequence();
+    return cancel;
   }, []);
 
   // Screen shake helper
@@ -141,6 +180,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
   const p1Ref = useRef<FighterSimState>(p1State);
   const p2Ref = useRef<FighterSimState>(p2State);
   const keysDown = useRef<Record<string, boolean>>({});
+  const touchBlockingRef = useRef(false);
 
   // Sync state refs
   useEffect(() => {
@@ -183,34 +223,38 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
       keysDown.current[key] = true;
 
       const p1 = p1Ref.current;
-      if (p1.hp <= 0 || winner) return;
+      const p2 = p2Ref.current;
+      if (p1.hp <= 0 || winner || !isMatchStartedRef.current) return;
 
       if (key === 'j') {
         // Basic Attack
-        if (p1.state !== 'ATTACK' && p1.state !== 'SKILL' && p1.state !== 'ULTIMATE') {
+        if (p1.state !== 'ATTACK' && p1.state !== 'SKILL' && p1.state !== 'ULTIMATE' && p1.state !== 'HIT') {
           p1.state = 'ATTACK';
           p1.stateTimer = 0;
           p1.attackHitRegistered = false;
+          p1.facing = p2.x >= p1.x ? 1 : -1;
         }
       } else if (key === 'k') {
         // Skill 1
-        if (p1.skillCooldownRemaining <= 0 && p1.state !== 'SKILL' && p1.state !== 'ULTIMATE') {
+        if (p1.skillCooldownRemaining <= 0 && p1.state !== 'SKILL' && p1.state !== 'ULTIMATE' && p1.state !== 'HIT') {
           p1.state = 'SKILL';
           p1.stateTimer = 0;
           p1.attackHitRegistered = false;
+          p1.facing = p2.x >= p1.x ? 1 : -1;
           p1.skillCooldownRemaining = p1Char.skill1.cooldown;
           setSkillBanner({ text: `${p1Char.name}: ${p1Char.skill1.name}`, color: '#00D2D3' });
           setTimeout(() => setSkillBanner(null), 1400);
-          if (p1Char.skill1.dash) {
+          if (p1Char.skill1.dash && p1.rootTimer <= 0) {
             p1.vx = p1.facing * p1Char.speed * 2.2;
           }
         }
       } else if (key === 'l') {
         // Ultimate
-        if (p1.energy >= 100 && p1.ultimateCooldownRemaining <= 0) {
+        if (p1.energy >= 100 && p1.ultimateCooldownRemaining <= 0 && p1.state !== 'ULTIMATE' && p1.state !== 'HIT') {
           p1.state = 'ULTIMATE';
           p1.stateTimer = 0;
           p1.attackHitRegistered = false;
+          p1.facing = p2.x >= p1.x ? 1 : -1;
           p1.energy = 0;
           p1.ultimateCooldownRemaining = p1Char.ultimate.cooldown;
           setSkillBanner({ text: `${p1Char.name}: ${p1Char.ultimate.name}!`, color: '#D4AF37' });
@@ -219,7 +263,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
         }
       } else if (key === 'w' || key === 'arrowup') {
         // Jump
-        if (p1.y === 0) {
+        if (p1.y === 0 && p1.rootTimer <= 0) {
           p1.vy = 12.5;
         }
       }
@@ -255,59 +299,87 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
       const p2 = p2Ref.current;
 
       if (!winner) {
-        // 1. Process P1 Input Movement
-        const keys = keysDown.current;
-        p1.isBlocking = Boolean(keys['s'] || keys['arrowdown']);
+        if (!isMatchStartedRef.current) {
+          // While countdown is active: both fighters wait in ready stance, bot does NOT attack
+          p1.state = 'IDLE';
+          p1.vx = 0;
+          p1.facing = p2.x >= p1.x ? 1 : -1;
 
-        if (p1.state !== 'ATTACK' && p1.state !== 'SKILL' && p1.state !== 'ULTIMATE' && p1.state !== 'HIT') {
-          let moveDir = 0;
-          if (keys['a'] || keys['arrowleft']) moveDir -= 1;
-          if (keys['d'] || keys['arrowright']) moveDir += 1;
+          p2.state = 'IDLE';
+          p2.vx = 0;
+          p2.facing = p1.x >= p2.x ? 1 : -1;
 
-          if (moveDir !== 0 && !p1.isBlocking) {
-            p1.state = 'WALK';
-            p1.facing = moveDir;
-            p1.vx = moveDir * p1Char.speed * p1.slowFactor;
-            p1.x += p1.vx * dt;
-          } else {
-            p1.state = 'IDLE';
-            p1.vx = 0;
+          // Simple gravity/physics tick without AI actions or combat hits
+          updateFighterState(p1, dt);
+          updateFighterState(p2, dt);
+        } else {
+          // 1. Process P1 Input Movement & Blocking
+          const keys = keysDown.current;
+          p1.isBlocking = Boolean(keys['s'] || keys['arrowdown'] || touchBlockingRef.current);
+
+          if (p1.state !== 'ATTACK' && p1.state !== 'SKILL' && p1.state !== 'ULTIMATE' && p1.state !== 'HIT') {
+            let moveDir = 0;
+            if (keys['a'] || keys['arrowleft']) moveDir -= 1;
+            if (keys['d'] || keys['arrowright']) moveDir += 1;
+
+            if (moveDir !== 0 && !p1.isBlocking && p1.rootTimer <= 0) {
+              p1.state = 'WALK';
+              p1.facing = moveDir;
+              p1.vx = moveDir * p1Char.speed * p1.slowFactor;
+            } else {
+              p1.state = 'IDLE';
+              p1.vx = 0;
+              // Face opponent when idle or blocking
+              p1.facing = p2.x >= p1.x ? 1 : -1;
+            }
           }
-        }
 
-        // 2. Process P2 AI
-        if (isBotMatch) {
-          aiRef.current.update(p2, p1, dt);
-        }
+          // 2. Process P2 AI (Bot only moves and attacks after countdown finishes)
+          if (isBotMatch) {
+            aiRef.current.update(p2, p1, dt);
+          }
 
-        // 3. Update Individual Timers & Gravity
-        updateFighterState(p1, dt);
-        updateFighterState(p2, dt);
+          // 3. Update Individual Timers, Movement Integration & Gravity
+          updateFighterState(p1, dt);
+          updateFighterState(p2, dt);
 
-        // 4. Strict Sub-stepped Anti-Clipping Collision Resolution
-        resolveFighterCollision(p1, p2, 4);
+          // 4. Strict Sub-stepped Anti-Clipping Collision Resolution
+          resolveFighterCollision(p1, p2, 4);
 
-        // 5. Process Combat Hits
-        const hitP1toP2 = processCombatHits(p1, p2);
-        if (hitP1toP2) {
-          combatEffects.addDamageText(hitP1toP2.x, hitP1toP2.y, hitP1toP2.damage, hitP1toP2.blocked);
-          if (hitP1toP2.damage > 90) triggerScreenShake();
-        }
+          // 5. Process Combat Hits & Combo Counters
+          const hitP1toP2 = processCombatHits(p1, p2);
+          if (hitP1toP2) {
+            combatEffects.addDamageText(
+              hitP1toP2.x,
+              hitP1toP2.y,
+              hitP1toP2.damage,
+              hitP1toP2.blocked,
+              hitP1toP2.comboCount
+            );
+            if (hitP1toP2.damage > 90 || hitP1toP2.comboCount >= 3) triggerScreenShake();
+          }
 
-        const hitP2toP1 = processCombatHits(p2, p1);
-        if (hitP2toP1) {
-          combatEffects.addDamageText(hitP2toP1.x, hitP2toP1.y, hitP2toP1.damage, hitP2toP1.blocked);
-          if (hitP2toP1.damage > 90) triggerScreenShake();
-        }
+          const hitP2toP1 = processCombatHits(p2, p1);
+          if (hitP2toP1) {
+            combatEffects.addDamageText(
+              hitP2toP1.x,
+              hitP2toP1.y,
+              hitP2toP1.damage,
+              hitP2toP1.blocked,
+              hitP2toP1.comboCount
+            );
+            if (hitP2toP1.damage > 90 || hitP2toP1.comboCount >= 3) triggerScreenShake();
+          }
 
-        // 6. Check Win Condition
-        if (p2.hp <= 0 && !winner) {
-          setWinner('player1');
-          soundEngine.playGachaSummonChimes(true);
-          handleMatchSettlement('player1');
-        } else if (p1.hp <= 0 && !winner) {
-          setWinner('player2');
-          handleMatchSettlement('player2');
+          // 6. Check Win Condition
+          if (p2.hp <= 0 && !winner) {
+            setWinner('player1');
+            soundEngine.playGachaSummonChimes(true);
+            handleMatchSettlement('player1');
+          } else if (p1.hp <= 0 && !winner) {
+            setWinner('player2');
+            handleMatchSettlement('player2');
+          }
         }
       }
 
@@ -426,45 +498,59 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
     setP1State(freshP1);
     setP2State(freshP2);
     setWinner(null);
-    setMatchIntro('LAGA DIMULAI!');
-    setTimeout(() => setMatchIntro(''), 1500);
+    startCountdownSequence();
   };
 
-  const handlePlayerOnScreenAction = (action: 'ATTACK' | 'SKILL' | 'ULTIMATE' | 'BLOCK' | 'DASH' | 'JUMP') => {
+  const handlePlayerOnScreenAction = (action: 'ATTACK' | 'SKILL' | 'ULTIMATE' | 'BLOCK' | 'BLOCK_START' | 'BLOCK_END' | 'DASH' | 'JUMP') => {
     const p1 = p1Ref.current;
-    if (p1.hp <= 0 || winner) return;
+    const p2 = p2Ref.current;
+    if (p1.hp <= 0 || winner || !isMatchStartedRef.current) return;
 
-    if (action === 'ATTACK') {
-      if (p1.state !== 'ATTACK' && p1.state !== 'SKILL' && p1.state !== 'ULTIMATE') {
+    if (action === 'BLOCK_START') {
+      touchBlockingRef.current = true;
+      p1.isBlocking = true;
+    } else if (action === 'BLOCK_END') {
+      touchBlockingRef.current = false;
+      p1.isBlocking = false;
+    } else if (action === 'BLOCK') {
+      touchBlockingRef.current = !touchBlockingRef.current;
+      p1.isBlocking = touchBlockingRef.current;
+    } else if (action === 'ATTACK') {
+      if (p1.state !== 'ATTACK' && p1.state !== 'SKILL' && p1.state !== 'ULTIMATE' && p1.state !== 'HIT') {
         p1.state = 'ATTACK';
         p1.stateTimer = 0;
         p1.attackHitRegistered = false;
+        p1.facing = p2.x >= p1.x ? 1 : -1;
       }
     } else if (action === 'SKILL') {
-      if (p1.skillCooldownRemaining <= 0) {
+      if (p1.skillCooldownRemaining <= 0 && p1.state !== 'SKILL' && p1.state !== 'ULTIMATE' && p1.state !== 'HIT') {
         p1.state = 'SKILL';
         p1.stateTimer = 0;
         p1.attackHitRegistered = false;
+        p1.facing = p2.x >= p1.x ? 1 : -1;
         p1.skillCooldownRemaining = p1Char.skill1.cooldown;
         setSkillBanner({ text: `${p1Char.name}: ${p1Char.skill1.name}`, color: '#00D2D3' });
         setTimeout(() => setSkillBanner(null), 1400);
-        if (p1Char.skill1.dash) {
+        if (p1Char.skill1.dash && p1.rootTimer <= 0) {
           p1.vx = p1.facing * p1Char.speed * 2.2;
         }
       }
     } else if (action === 'ULTIMATE') {
-      if (p1.energy >= 100 && p1.ultimateCooldownRemaining <= 0) {
+      if (p1.energy >= 100 && p1.ultimateCooldownRemaining <= 0 && p1.state !== 'ULTIMATE' && p1.state !== 'HIT') {
         p1.state = 'ULTIMATE';
         p1.stateTimer = 0;
         p1.attackHitRegistered = false;
+        p1.facing = p2.x >= p1.x ? 1 : -1;
         p1.energy = 0;
         p1.ultimateCooldownRemaining = p1Char.ultimate.cooldown;
         setSkillBanner({ text: `${p1Char.name}: ${p1Char.ultimate.name}!`, color: '#D4AF37' });
         triggerScreenShake();
         setTimeout(() => setSkillBanner(null), 2000);
       }
-    } else if (action === 'BLOCK') {
-      p1.isBlocking = !p1.isBlocking;
+    } else if (action === 'JUMP') {
+      if (p1.y === 0 && p1.rootTimer <= 0) {
+        p1.vy = 12.5;
+      }
     }
   };
 
@@ -473,16 +559,33 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
       {/* Three.js Canvas Container */}
       <div ref={containerRef} className="w-full h-full" />
 
-      {/* Match Intro Banner */}
-      {matchIntro && (
-        <div className="absolute inset-0 z-30 pointer-events-none flex items-center justify-center bg-black/40 backdrop-blur-xs">
-          <div className="text-center animate-scale-up">
-            <span className="text-xs uppercase font-bold tracking-widest text-[#D4AF37] block font-cinzel">
+      {/* Dramatic Fighting Game Match Countdown Overlay */}
+      {countdown !== null && (
+        <div className="absolute inset-0 z-40 pointer-events-none flex items-center justify-center bg-black/45 backdrop-blur-[2px]">
+          <div className="text-center select-none flex flex-col items-center">
+            <span className="text-xs sm:text-sm uppercase font-bold tracking-[0.3em] text-[#D4AF37] font-cinzel mb-2 drop-shadow-md">
               Ronde 1
             </span>
-            <h2 className="text-3xl sm:text-5xl font-black font-cinzel tracking-wider text-[#F4F2F7] drop-shadow-[0_4px_16px_rgba(212,175,55,0.6)]">
-              {matchIntro}
-            </h2>
+
+            {countdown > 0 ? (
+              <div key={countdown} className="animate-countdown-pop flex flex-col items-center">
+                <h2 className="text-8xl sm:text-9xl font-black font-cinzel tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-[#FFF5C0] via-[#D4AF37] to-[#8F6A1A] drop-shadow-[0_0_45px_rgba(212,175,55,0.85)] leading-none">
+                  {countdownText}
+                </h2>
+                <span className="text-xs sm:text-sm uppercase tracking-[0.25em] text-[#C5C0D0] font-cinzel font-bold mt-4 drop-shadow">
+                  BERSIAP...
+                </span>
+              </div>
+            ) : (
+              <div key="fight" className="animate-countdown-pop flex flex-col items-center">
+                <h2 className="text-5xl sm:text-8xl font-black font-cinzel tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B6B] via-[#FFD700] to-[#FF8E53] drop-shadow-[0_0_55px_rgba(255,107,107,0.95)] leading-none">
+                  {countdownText}
+                </h2>
+                <span className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#FFD700] font-cinzel font-bold mt-4 drop-shadow">
+                  PERTARUNGAN DIMULAI!
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}

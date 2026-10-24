@@ -363,12 +363,14 @@ export class Mythomachy3DScene {
       this.scene.add(this.fighter2Rig.root);
     }
 
-    // Position & Animate Fighter 1
+    // Position, Orient & Animate Fighter 1
     this.fighter1Rig.root.position.set(f1.x, f1.y, f1.z);
+    this.fighter1Rig.root.rotation.y = f1.facing === 1 ? Math.PI * 0.42 : -Math.PI * 0.42;
     this.fighter1Rig.updateAnimation(f1.state, f1.stateTimer, f1.facing);
 
-    // Position & Animate Fighter 2
+    // Position, Orient & Animate Fighter 2
     this.fighter2Rig.root.position.set(f2.x, f2.y, f2.z);
+    this.fighter2Rig.root.rotation.y = f2.facing === 1 ? Math.PI * 0.42 : -Math.PI * 0.42;
     this.fighter2Rig.updateAnimation(f2.state, f2.stateTimer, f2.facing);
   }
 

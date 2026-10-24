@@ -11,13 +11,24 @@ export interface CombatText {
 export class CombatEffectsManager {
   private texts: CombatText[] = [];
 
-  public addDamageText(x: number, y: number, damage: number, blocked: boolean = false) {
+  public addDamageText(
+    x: number,
+    y: number,
+    damage: number,
+    blocked: boolean = false,
+    comboCount: number = 0
+  ) {
+    let label = blocked ? `Tangkis! -${damage}` : `-${damage}`;
+    if (!blocked && comboCount > 1) {
+      label += ` (${comboCount}x)`;
+    }
+
     this.texts.push({
       id: Math.random().toString(),
-      text: blocked ? `Tangkis! -${damage}` : `-${damage}`,
+      text: label,
       x: x + (Math.random() - 0.5) * 0.4,
       y: y + 0.8,
-      color: blocked ? '#3498DB' : '#D9383A',
+      color: blocked ? '#3498DB' : comboCount >= 3 ? '#FFEAA7' : '#D9383A',
       life: 1.0,
       blocked
     });

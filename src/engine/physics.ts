@@ -14,6 +14,7 @@ export interface AttackHitEvent {
   x: number;
   y: number;
   skillName: string;
+  comboCount: number;
 }
 
 /**
@@ -51,7 +52,22 @@ export function updateFighterState(fighter: FighterSimState, dt: number) {
     fighter.vx = 0;
   }
 
-  // Apply gravity
+  // Apply horizontal velocity integration with damping
+  if (fighter.vx !== 0) {
+    if (fighter.rootTimer <= 0) {
+      fighter.x += fighter.vx * dt;
+    } else {
+      fighter.vx = 0;
+    }
+
+    // Apply friction to burst / dash / skill / knockback velocities
+    if (fighter.state === 'SKILL' || fighter.state === 'DASH' || fighter.state === 'HIT') {
+      fighter.vx *= Math.pow(0.12, dt);
+      if (Math.abs(fighter.vx) < 0.1) fighter.vx = 0;
+    }
+  }
+
+  // Apply vertical gravity & jumping
   if (fighter.y > 0 || fighter.vy > 0) {
     fighter.vy += GRAVITY * dt;
     fighter.y += fighter.vy * dt;
@@ -75,6 +91,7 @@ export function updateFighterState(fighter: FighterSimState, dt: number) {
     fighter.attackHitRegistered = false;
   } else if (fighter.state === 'HIT' && fighter.stateTimer >= 0.3) {
     fighter.state = 'IDLE';
+    fighter.attackHitRegistered = false;
   }
 
   // Clamp within arena bounds
@@ -107,14 +124,12 @@ export function resolveFighterCollision(
       const overlap = minDistance - dist;
       const push = overlap / 2;
 
-      // Stop dash immediately if touching opponent's boundary
-      if (f1.state === 'DASH') {
+      // Stop dash or forward skill velocity immediately upon touching opponent's physical boundary
+      if (f1.state === 'DASH' || f1.state === 'SKILL') {
         f1.vx = 0;
-        f1.state = 'IDLE';
       }
-      if (f2.state === 'DASH') {
+      if (f2.state === 'DASH' || f2.state === 'SKILL') {
         f2.vx = 0;
-        f2.state = 'IDLE';
       }
 
       if (dx >= 0) {
@@ -145,9 +160,10 @@ export function processCombatHits(
 
   const charDef = CHARACTERS[attacker.characterId];
   const dist = Math.abs(defender.x - attacker.x);
-  const isFacingDefender =
-    (attacker.facing === 1 && defender.x > attacker.x) ||
-    (attacker.facing === -1 && defender.x < attacker.x);
+  const verticalDist = Math.abs(defender.y - attacker.y);
+
+  // Directional facing check (allows point-blank melee overlap)
+  const isFacingDefender = (defender.x - attacker.x) * attacker.facing >= -0.25;
 
   let rawDmg = 0;
   let knockback = 0;
@@ -155,7 +171,7 @@ export function processCombatHits(
   let hitTriggered = false;
 
   if (attacker.state === 'ATTACK' && attacker.stateTimer >= 0.12) {
-    if (dist <= charDef.basicAttack.range && isFacingDefender) {
+    if (dist <= charDef.basicAttack.range && verticalDist <= 1.8 && isFacingDefender) {
       rawDmg = charDef.basicAttack.damage;
       knockback = 0.8;
       skillName = charDef.basicAttack.name;
@@ -163,8 +179,8 @@ export function processCombatHits(
       soundEngine.playHitSound(false);
     }
   } else if (attacker.state === 'SKILL' && attacker.stateTimer >= 0.2) {
-    const range = charDef.skill1.dash ? 3.5 : charDef.skill1.projectile ? 9.0 : 2.8;
-    if (dist <= range && isFacingDefender) {
+    const range = charDef.skill1.dash ? 3.6 : charDef.skill1.projectile ? 9.0 : 2.8;
+    if (dist <= range && verticalDist <= 2.6 && isFacingDefender) {
       rawDmg = charDef.skill1.damage;
       knockback = 2.4;
       skillName = charDef.skill1.name;
@@ -172,14 +188,20 @@ export function processCombatHits(
 
       // Special skill side-effects
       if (attacker.characterId === 'anubis') {
-        // Heals 60 HP
         attacker.hp = Math.min(attacker.maxHp, attacker.hp + 60);
       } else if (attacker.characterId === 'nyirorokidul') {
-        // Heals 90 HP
         attacker.hp = Math.min(attacker.maxHp, attacker.hp + 90);
       } else if (attacker.characterId === 'athena') {
-        // Counter dmg
         rawDmg += 30;
+      } else if (attacker.characterId === 'quetzalcoatl') {
+        knockback = -1.8; // Topan vortex pulls opponent towards attacker
+      } else if (attacker.characterId === 'garuda') {
+        knockback = 3.2; // Extra wing storm pushback
+      } else if (attacker.characterId === 'wukong') {
+        attacker.x -= attacker.facing * 1.4; // Acrobatic backflip
+      } else if (attacker.characterId === 'thor') {
+        defender.slowTimer = 1.8;
+        defender.slowFactor = 0.4;
       }
 
       soundEngine.playHitSound(true);
@@ -192,7 +214,7 @@ export function processCombatHits(
   } else if (attacker.state === 'ULTIMATE' && attacker.stateTimer >= 0.35) {
     // Ultimate AoE check
     const range = 8.5;
-    if (dist <= range) {
+    if (dist <= range && verticalDist <= 4.2) {
       rawDmg = charDef.ultimate.damage;
       knockback = 4.0;
       skillName = charDef.ultimate.name;
@@ -210,6 +232,8 @@ export function processCombatHits(
       } else if (attacker.characterId === 'chronos') {
         defender.slowTimer = 2.5;
         defender.slowFactor = 0.2; // 80% time slow
+      } else if (attacker.characterId === 'nyirorokidul') {
+        knockback = 5.5; // Massive tsunami push
       }
 
       soundEngine.playUltimateSound();
@@ -222,26 +246,43 @@ export function processCombatHits(
     attacker.attackHitRegistered = true;
     attacker.energy = Math.min(100, attacker.energy + 18);
 
-    // Apply block reduction
+    // Dynamic combo counter tracking
+    const now = performance.now();
+    if (now - attacker.lastHitTime < 1800) {
+      attacker.comboCount += 1;
+    } else {
+      attacker.comboCount = 1;
+    }
+    attacker.lastHitTime = now;
+
+    // Directional block check: Defender must be facing the incoming attack
+    const isDefenderFacingAttacker = (attacker.x - defender.x) * defender.facing >= -0.25;
+    const canBlock = defender.isBlocking && isDefenderFacingAttacker;
+
     let actualDmg = rawDmg;
     let blocked = false;
-    if (defender.isBlocking) {
-      actualDmg = Math.round(rawDmg * 0.35); // 65% block
+
+    if (canBlock) {
+      actualDmg = Math.round(rawDmg * 0.35); // 65% block reduction
       blocked = true;
-      knockback *= 0.4;
+      knockback *= 0.35;
+      defender.energy = Math.min(100, defender.energy + 14); // Bonus energy for successful parry
+      // Defender maintains stance without entering full hurt stagger
+      defender.state = 'IDLE';
+    } else {
+      defender.state = 'HIT';
+      defender.stateTimer = 0;
+      defender.energy = Math.min(100, defender.energy + 8);
     }
 
-    // Apply defender buff reduction
+    // Apply defender buff reduction if active
     if (defender.damageReductionBuff > 0) {
       actualDmg = Math.round(actualDmg * (1 - defender.damageReductionBuff));
     }
 
     defender.hp = Math.max(0, defender.hp - actualDmg);
-    defender.state = 'HIT';
-    defender.stateTimer = 0;
-    defender.energy = Math.min(100, defender.energy + 10);
 
-    // Knockback
+    // Apply knockback
     const knockDir = attacker.facing;
     defender.x += knockDir * knockback;
     defender.x = Math.max(-ARENA_BOUND_X, Math.min(ARENA_BOUND_X, defender.x));
@@ -254,7 +295,8 @@ export function processCombatHits(
       knockback,
       x: defender.x,
       y: defender.y + 1.2,
-      skillName
+      skillName,
+      comboCount: attacker.comboCount
     };
   }
 

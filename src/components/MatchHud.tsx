@@ -8,7 +8,7 @@ interface MatchHudProps {
   p2: FighterSimState;
   p1Name: string;
   p2Name: string;
-  onPlayerAction: (action: 'ATTACK' | 'SKILL' | 'ULTIMATE' | 'BLOCK' | 'DASH' | 'JUMP') => void;
+  onPlayerAction: (action: 'ATTACK' | 'SKILL' | 'ULTIMATE' | 'BLOCK' | 'BLOCK_START' | 'BLOCK_END' | 'DASH' | 'JUMP') => void;
   onExitMatch: () => void;
 }
 
@@ -165,11 +165,18 @@ export const MatchHud: React.FC<MatchHudProps> = ({
         <div className="flex items-center gap-2.5 sm:gap-3 ml-auto">
           {/* Tangkis (Block) */}
           <button
-            onMouseDown={() => onPlayerAction('BLOCK')}
-            onTouchStart={() => onPlayerAction('BLOCK')}
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[#1F1B2E] border border-[#2D2842] text-[#F4F2F7] flex flex-col items-center justify-center active:scale-95 transition-all shadow-lg cursor-pointer hover:border-[#3498DB]/50"
+            onMouseDown={() => onPlayerAction('BLOCK_START')}
+            onMouseUp={() => onPlayerAction('BLOCK_END')}
+            onMouseLeave={() => onPlayerAction('BLOCK_END')}
+            onTouchStart={() => onPlayerAction('BLOCK_START')}
+            onTouchEnd={() => onPlayerAction('BLOCK_END')}
+            className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl border flex flex-col items-center justify-center active:scale-95 transition-all shadow-lg cursor-pointer ${
+              p1.isBlocking
+                ? 'bg-[#3498DB]/30 border-[#3498DB] text-[#3498DB] shadow-[0_0_14px_rgba(52,152,219,0.5)]'
+                : 'bg-[#1F1B2E] border-[#2D2842] text-[#F4F2F7] hover:border-[#3498DB]/50'
+            }`}
           >
-            <IconShield size={16} color="#3498DB" />
+            <IconShield size={16} color={p1.isBlocking ? '#3498DB' : '#A0A0B8'} />
             <span className="text-[9px] font-bold mt-0.5">Tangkis</span>
             <span className="text-[8px] text-[#9E98B0]">[S]</span>
           </button>

@@ -6,18 +6,19 @@ import {
   IconSettings,
   IconTemple,
   IconRelicShard,
-  IconGemJade,
-  IconEye
+  IconGemJade
 } from './SvgIcons';
 import { soundEngine } from '../audio/soundEngine';
 
 interface HeaderProps {
   demoMode: boolean;
   onToggleDemoMode: () => void;
-  viewMode: ViewMode;
-  onToggleViewMode: () => void;
+  viewMode?: ViewMode;
+  onToggleViewMode?: () => void;
   onOpenGacha: () => void;
   onOpenSettings: () => void;
+  onOpenAudit: () => void;
+  isAuditActive?: boolean;
   playerProfile: PlayerProfile;
   isMuted: boolean;
   onToggleMute: () => void;
@@ -26,10 +27,10 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   demoMode,
   onToggleDemoMode,
-  viewMode,
-  onToggleViewMode,
   onOpenGacha,
   onOpenSettings,
+  onOpenAudit,
+  isAuditActive = false,
   playerProfile,
   isMuted,
   onToggleMute
@@ -97,21 +98,22 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="hidden sm:inline">Kuil Pemanggilan</span>
           </button>
 
-          {/* 2D / 3D Switcher Button */}
+          {/* Audit Monad Blockchain Button */}
           <button
             onClick={() => {
               soundEngine.playClickSound();
-              onToggleViewMode();
+              onOpenAudit();
             }}
-            className={`header-pill border text-xs font-bold transition-all cursor-pointer ${
-              viewMode === '3D'
-                ? 'bg-[#6E56CF] border-[#9D88F5] text-white shadow-[0_0_14px_rgba(110,86,207,0.5)]'
-                : 'bg-[#1F1B2E] border-[#D4AF37] text-[#D4AF37]'
+            className={`header-pill border text-xs font-bold font-cinzel transition-all cursor-pointer ${
+              isAuditActive
+                ? 'bg-[#6E56CF] border-[#9D88F5] text-white shadow-[0_0_14px_rgba(110,86,207,0.6)]'
+                : 'bg-[#14121D] border-[#2D2842] text-[#D4AF37] hover:border-[#D4AF37]/60 hover:bg-[#D4AF37]/10'
             }`}
-            style={{ padding: '8px 16px' }}
+            style={{ padding: '8px 14px' }}
+            title="Buka Halaman Audit Blockchain & Telemetri Monad"
           >
-            <IconEye size={14} />
-            <span>Mode {viewMode}</span>
+            <span className="w-2 h-2 rounded-full bg-[#2E9E6B] animate-pulse shrink-0" />
+            <span className="hidden sm:inline">Audit Monad</span>
           </button>
 
           {/* Sound Mute Toggle */}

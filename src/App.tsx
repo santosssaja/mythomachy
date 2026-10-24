@@ -23,6 +23,7 @@ import { GachaTempleModal } from './components/GachaTempleModal';
 import { SettingsModal } from './components/SettingsModal';
 import { HelpModal, HelpSectionId } from './components/HelpModal';
 import { ArenaView } from './components/ArenaView';
+import { AuditView } from './components/AuditView';
 import { IconCheck, IconFiligreeCorner, IconGemJade } from './components/SvgIcons';
 
 export type LobbyTab = 'mode' | 'character' | 'map';
@@ -46,8 +47,8 @@ export const App: React.FC = () => {
   // CRITICAL RULE: demoMode MUST initialize to false (OFF) by default
   const [demoMode, setDemoMode] = useState<boolean>(false);
 
-  // View state: 'lobby' or 'match'
-  const [currentView, setCurrentView] = useState<'lobby' | 'match'>('lobby');
+  // View state: 'lobby', 'match', or 'audit'
+  const [currentView, setCurrentView] = useState<'lobby' | 'match' | 'audit'>('lobby');
 
   // Active step navigation tab: 'mode' | 'character' | 'map'
   const [activeTab, setActiveTab] = useState<LobbyTab>('mode');
@@ -190,13 +191,21 @@ export const App: React.FC = () => {
         onToggleViewMode={handleToggleViewMode}
         onOpenGacha={() => setIsGachaOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenAudit={() => setCurrentView(prev => (prev === 'audit' ? 'lobby' : 'audit'))}
+        isAuditActive={currentView === 'audit'}
         playerProfile={playerProfile}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
       />
 
-      {/* MAIN WORKSPACE: 2-COLUMN AAA FIGHTING GAME LOBBY */}
-      {currentView === 'lobby' ? (
+      {/* MAIN WORKSPACE: AUDIT PAGE, 2-COLUMN LOBBY, OR MATCH ARENA */}
+      {currentView === 'audit' ? (
+        <AuditView
+          onClose={() => setCurrentView('lobby')}
+          playerProfile={playerProfile}
+          onProfileUpdated={setPlayerProfile}
+        />
+      ) : currentView === 'lobby' ? (
         <>
           <main className="main-content relative z-10 animate-fade-in">
             {/* LEFT COLUMN: LIVE FIGHTER & ARENA SHOWCASE STAGE */}

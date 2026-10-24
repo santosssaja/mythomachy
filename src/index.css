@@ -889,18 +889,53 @@ h1, h2, h3, h4, h5, .font-cinzel {
   box-sizing: border-box;
 }
 
-.telemetry-tabs {
+.telemetry-tabs,
+.telemetry-tabs-container {
+  flex-shrink: 0 !important; /* Wajib agar tinggi baris tab tidak menyusut menjadi garis tipis */
+  min-height: 44px;
+  overflow-x: auto;
+  overflow-y: visible;
   display: flex;
+  align-items: center;
   gap: 10px;
-  padding: 4px 0;
-  margin: 16px 0;
+  margin: 10px 0 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
+  box-sizing: border-box;
 }
 
 .telemetry-tab-btn {
+  flex-shrink: 0;
   padding: 8px 16px;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+}
+
+/* Beri ruang di dalam badge kecil (SANGAT CEPAT, 150M GAS, BUTUH GAS, +0.02 MON) */
+.metric-badge,
+.faucet-mini-btn,
+.testnet-status-pill {
+  padding: 4px 10px !important; /* Mencegah huruf menempel ke border kotak kecil */
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
+/* Beri padding pada kotak dalam Parameter Jaringan agar "RPC Endpoint" tidak menempel garis atas */
+.parameter-list-box {
+  padding: 14px 18px;
+  border-radius: 12px;
+  background-color: #100e18;
+  border: 1px solid #2D2842;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 

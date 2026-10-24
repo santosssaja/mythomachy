@@ -269,12 +269,12 @@ export const JudgeVerificationBar: React.FC<JudgeVerificationBarProps> = ({ onOp
               </button>
 
               <span
-                className={`font-mono text-[11px] font-bold rounded ${
+                className={`metric-badge font-mono text-[11px] font-bold rounded ${
                   hasBalance
                     ? 'bg-[#2E9E6B]/20 text-[#2E9E6B] border border-[#2E9E6B]/40'
                     : 'bg-[#D9383A]/20 text-[#D9383A] border border-[#D9383A]/40 animate-pulse'
                 }`}
-                style={{ padding: '3px 8px' }}
+                style={{ padding: '4px 10px' }}
                 title="Saldo gas MON dompet sesi saat ini"
               >
                 {balance}
@@ -297,12 +297,12 @@ export const JudgeVerificationBar: React.FC<JudgeVerificationBarProps> = ({ onOp
                     {metaMask.address.slice(0, 6)}...{metaMask.address.slice(-4)}
                   </span>
                   <span
-                    className={`font-mono text-[11px] font-bold rounded ${
+                    className={`metric-badge font-mono text-[11px] font-bold rounded ${
                       metaMask.isMonadTestnet
                         ? 'bg-[#2E9E6B]/20 text-[#2E9E6B] border border-[#2E9E6B]/40'
                         : 'bg-[#E67E22]/20 text-[#E67E22] border border-[#E67E22]/40'
                     }`}
-                    style={{ padding: '3px 8px' }}
+                    style={{ padding: '4px 10px' }}
                     title={metaMask.isMonadTestnet ? 'Saldo MetaMask di Monad Testnet' : 'Beralih ke Monad Testnet'}
                   >
                     {metaMask.balance}

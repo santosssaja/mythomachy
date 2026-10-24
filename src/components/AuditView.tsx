@@ -361,7 +361,10 @@ export const AuditView: React.FC<AuditViewProps> = ({
               <h1 className="font-cinzel font-black text-base sm:text-lg tracking-wider text-[#F4F2F7]">
                 AUDIT BLOCKCHAIN & TELEMETRI MONAD
               </h1>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-[#2E9E6B] px-2.5 py-1 rounded bg-[#2E9E6B]/15 border border-[#2E9E6B]/40 font-mono flex items-center gap-1.5">
+              <span
+                className="testnet-status-pill text-[10px] uppercase font-bold tracking-widest text-[#2E9E6B] bg-[#2E9E6B]/15 border border-[#2E9E6B]/40 font-mono flex items-center gap-1.5"
+                style={{ padding: '4px 10px' }}
+              >
                 <span className="w-2 h-2 rounded-full bg-[#2E9E6B] animate-pulse" />
                 MONAD 10143 (TESTNET)
               </span>
@@ -421,9 +424,12 @@ export const AuditView: React.FC<AuditViewProps> = ({
               <IconLightning size={14} color={isHealthy ? '#2E9E6B' : '#E056FD'} />
               Latensi Node RPC
             </span>
-            <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
-              isHealthy ? 'bg-[#2E9E6B]/15 text-[#2E9E6B] border border-[#2E9E6B]/30' : 'bg-[#E056FD]/15 text-[#E056FD]'
-            }`}>
+            <span
+              className={`metric-badge text-[10px] font-mono font-bold ${
+                isHealthy ? 'bg-[#2E9E6B]/15 text-[#2E9E6B] border border-[#2E9E6B]/30' : 'bg-[#E056FD]/15 text-[#E056FD]'
+              }`}
+              style={{ padding: '4px 10px' }}
+            >
               {currentLatency > 0 ? (currentLatency < 800 ? 'SANGAT CEPAT' : 'STABIL') : 'MEMUAT...'}
             </span>
           </div>
@@ -448,8 +454,11 @@ export const AuditView: React.FC<AuditViewProps> = ({
               <IconDatabase size={14} color="#6E56CF" />
               Tinggi Blok Terkini
             </span>
-            <span className="text-[10px] font-mono text-[#9D88F5] bg-[#6E56CF]/15 px-2 py-0.5 rounded border border-[#6E56CF]/30 font-bold">
-              ~300ms / BLOK
+            <span
+              className="metric-badge text-[10px] font-mono text-[#9D88F5] bg-[#6E56CF]/15 border border-[#6E56CF]/30 font-bold"
+              style={{ padding: '4px 10px' }}
+            >
+              ~500ms / BLOK
             </span>
           </div>
           <div className="flex items-baseline gap-2">
@@ -484,7 +493,10 @@ export const AuditView: React.FC<AuditViewProps> = ({
               <IconFuel size={14} color="#D4AF37" />
               Batas Gas Blok
             </span>
-            <span className="text-[10px] font-mono text-[#D4AF37] bg-[#D4AF37]/15 px-2 py-0.5 rounded border border-[#D4AF37]/30 font-bold">
+            <span
+              className="metric-badge text-[10px] font-mono text-[#D4AF37] bg-[#D4AF37]/15 border border-[#D4AF37]/30 font-bold"
+              style={{ padding: '4px 10px' }}
+            >
               150M GAS
             </span>
           </div>
@@ -508,11 +520,14 @@ export const AuditView: React.FC<AuditViewProps> = ({
               <IconTrophy size={14} color={auditData?.isFunded ? '#2E9E6B' : '#FF5555'} />
               Saldo Dompet Sesi
             </span>
-            <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
-              auditData?.isFunded
-                ? 'bg-[#2E9E6B]/15 text-[#2E9E6B] border border-[#2E9E6B]/30'
-                : 'bg-[#FF5555]/15 text-[#FF5555] border border-[#FF5555]/30'
-            }`}>
+            <span
+              className={`metric-badge text-[10px] font-mono font-bold ${
+                auditData?.isFunded
+                  ? 'bg-[#2E9E6B]/15 text-[#2E9E6B] border border-[#2E9E6B]/30'
+                  : 'bg-[#FF5555]/15 text-[#FF5555] border border-[#FF5555]/30'
+              }`}
+              style={{ padding: '4px 10px' }}
+            >
               {auditData?.isFunded ? 'SIAP EKSEKUSI' : 'BUTUH GAS'}
             </span>
           </div>
@@ -526,7 +541,8 @@ export const AuditView: React.FC<AuditViewProps> = ({
             <button
               onClick={handleAutoFund}
               disabled={faucetLoading}
-              className="text-[11px] font-bold font-cinzel text-[#D4AF37] bg-[#D4AF37]/15 hover:bg-[#D4AF37]/30 border border-[#D4AF37]/40 px-2.5 py-1 rounded transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+              className="faucet-mini-btn text-[11px] font-bold font-cinzel text-[#D4AF37] bg-[#D4AF37]/15 hover:bg-[#D4AF37]/30 border border-[#D4AF37]/40 rounded transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+              style={{ padding: '4px 10px' }}
               title="Isi Saldo Sesi Otomatis dari Gas Sponsor"
             >
               {faucetLoading ? 'Mengisi...' : '+0.02 MON'}
@@ -544,10 +560,20 @@ export const AuditView: React.FC<AuditViewProps> = ({
         </div>
       </div>
 
-      {/* Main Content: Segmented Tabs with Generous Spacing and Margins */}
+      {/* Main Content: Segmented Tabs (flex-shrink-0 to guarantee it never squishes) */}
       <div
-        className="telemetry-tabs border-b border-[#2D2842] pb-2 overflow-x-auto"
-        style={{ margin: '16px 0', gap: '10px' }}
+        className="telemetry-tabs telemetry-tabs-container border-b border-[#2D2842] flex-shrink-0"
+        style={{
+          flexShrink: 0,
+          minHeight: '44px',
+          margin: '10px 0 16px 0',
+          paddingBottom: '8px',
+          gap: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          overflowX: 'auto',
+          overflowY: 'visible'
+        }}
       >
         <button
           onClick={() => {
@@ -626,33 +652,34 @@ export const AuditView: React.FC<AuditViewProps> = ({
               Parameter Jaringan Monad Testnet
             </h2>
 
-            <div className="space-y-3 text-xs">
-              <div className="param-row" style={{ padding: '12px 16px' }}>
+            {/* Well-Padded Parameter List Box: Prevents "RPC Endpoint" from touching top border */}
+            <div className="parameter-list-box text-xs">
+              <div className="param-row">
                 <span className="text-[#9E98B0]">RPC Endpoint</span>
                 <span className="font-mono text-[#F4F2F7] font-semibold">{MONAD_CONFIG.rpcUrl}</span>
               </div>
 
-              <div className="param-row" style={{ padding: '12px 16px' }}>
+              <div className="param-row">
                 <span className="text-[#9E98B0]">Chain ID</span>
                 <span className="font-mono text-[#F4F2F7] font-semibold">{MONAD_CONFIG.chainId} (Hex: 0x279f)</span>
               </div>
 
-              <div className="param-row" style={{ padding: '12px 16px' }}>
+              <div className="param-row">
                 <span className="text-[#9E98B0]">Mata Uang Asli (Native Token)</span>
                 <span className="font-mono text-[#D4AF37] font-semibold">MON (18 desimal)</span>
               </div>
 
-              <div className="param-row" style={{ padding: '12px 16px' }}>
+              <div className="param-row">
                 <span className="text-[#9E98B0]">Waktu Blok (Target Block Time)</span>
                 <span className="font-mono text-[#2E9E6B] font-semibold">~300 - 400 milidetik</span>
               </div>
 
-              <div className="param-row" style={{ padding: '12px 16px' }}>
+              <div className="param-row">
                 <span className="text-[#9E98B0]">Finalitas Transaksi (Finality Time)</span>
                 <span className="font-mono text-[#2E9E6B] font-semibold">~600 ms (1-slot BFT Consensus)</span>
               </div>
 
-              <div className="param-row" style={{ padding: '12px 16px' }}>
+              <div className="param-row">
                 <span className="text-[#9E98B0]">Penjelajah Blok (Block Explorer)</span>
                 <a
                   href={MONAD_CONFIG.explorerUrl}
@@ -665,7 +692,7 @@ export const AuditView: React.FC<AuditViewProps> = ({
                 </a>
               </div>
 
-              <div className="param-row" style={{ padding: '12px 16px' }}>
+              <div className="param-row">
                 <span className="text-[#9E98B0]">Pemeriksaan Sinkronisasi Terakhir</span>
                 <span className="font-mono text-[#F4F2F7]">
                   {auditData ? auditData.fetchedAt.toLocaleTimeString('id-ID') : 'Sedang memuat...'}

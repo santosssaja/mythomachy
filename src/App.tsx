@@ -17,11 +17,12 @@ import { JudgeVerificationBar } from './components/JudgeVerificationBar';
 import { CharacterSelectView } from './components/CharacterSelectView';
 import { MapSelectView } from './components/MapSelectView';
 import { LobbyView } from './components/LobbyView';
+import { LobbyShowcaseCard } from './components/LobbyShowcaseCard';
+import { BottomActionDock } from './components/BottomActionDock';
 import { GachaTempleModal } from './components/GachaTempleModal';
 import { SettingsModal } from './components/SettingsModal';
 import { HelpModal, HelpSectionId } from './components/HelpModal';
 import { ArenaView } from './components/ArenaView';
-import { IconSwords, IconBot, IconUser, IconTemple } from './components/SvgIcons';
 
 export type LobbyTab = 'mode' | 'character' | 'map';
 
@@ -32,7 +33,7 @@ export const App: React.FC = () => {
   // View state: 'lobby' or 'match'
   const [currentView, setCurrentView] = useState<'lobby' | 'match'>('lobby');
 
-  // Lobby flow step tab: 'mode' | 'character' | 'map'
+  // Active step navigation tab: 'mode' | 'character' | 'map'
   const [activeTab, setActiveTab] = useState<LobbyTab>('mode');
 
   // Game configuration
@@ -71,6 +72,7 @@ export const App: React.FC = () => {
         isPrivate: true,
         isReady: true
       });
+      setIsBotMatch(false);
       setActiveTab('mode');
     }
   }, []);
@@ -94,11 +96,16 @@ export const App: React.FC = () => {
     setIsMuted(next);
   };
 
-  const handleStartBotMatch = (diff: AIDifficulty) => {
-    setIsBotMatch(true);
-    setBotDifficulty(diff);
+  const handleSelectRoom = (room: RoomInfo) => {
+    setIsBotMatch(false);
+    setCurrentRoom(room);
+    setSelectedMapId(room.mapId);
+  };
 
-    // Pick an opponent character
+  const handleLaunchMatch = () => {
+    soundEngine.playMatchStartSound();
+
+    // Pick opponent character if not already set
     const candidates: CharacterId[] = [
       'athena',
       'thor',
@@ -117,29 +124,31 @@ export const App: React.FC = () => {
     setCurrentView('match');
   };
 
-  const handleStartPlayerMatch = (room: RoomInfo) => {
-    setIsBotMatch(false);
-    setCurrentRoom(room);
-    setSelectedMapId(room.mapId);
-
-    const candidates: CharacterId[] = [
-      'athena',
-      'thor',
-      'gilgamesh',
-      'nyirorokidul',
-      'chronos'
-    ].filter(id => id !== selectedCharId) as CharacterId[];
-    setOpponentCharId(candidates[Math.floor(Math.random() * candidates.length)]);
-
-    setCurrentView('match');
-  };
-
   const selectedChar = CHARACTERS[selectedCharId];
   const selectedMap = MAPS[selectedMapId];
 
+  const diffSublabel =
+    botDifficulty === 'easy'
+      ? 'Bot Santai'
+      : botDifficulty === 'medium'
+      ? 'Bot Taktis'
+      : 'Bot Legenda';
+
+  const modeSublabel = isBotMatch
+    ? diffSublabel
+    : `Pemain (${currentRoom?.code || 'Acak'})`;
+
   return (
-    <div className={`min-h-screen bg-[#0B0A0F] text-[#F4F2F7] flex flex-col ${demoMode ? 'pb-24' : 'pb-10'}`}>
-      {/* Top Header & Settings Bar */}
+    <div
+      className={`min-h-screen bg-[#0B0A0F] text-[#F4F2F7] flex flex-col relative ${
+        demoMode ? 'pb-36' : 'pb-28'
+      }`}
+      style={{
+        backgroundImage:
+          'radial-gradient(circle at 50% 0%, rgba(110, 86, 207, 0.16) 0%, transparent 65%), radial-gradient(circle at 100% 100%, rgba(212, 175, 55, 0.08) 0%, transparent 55%)'
+      }}
+    >
+      {/* Top Header & Settings Bar (KUIL PEMANGGILAN exists ONLY here) */}
       <Header
         demoMode={demoMode}
         onToggleDemoMode={handleToggleDemoMode}
@@ -153,178 +162,200 @@ export const App: React.FC = () => {
       />
 
       {/* Main Game Screen */}
-      <main className="max-w-7xl mx-auto w-full px-4 pt-5 flex-grow flex flex-col">
+      <main className="max-w-[1400px] mx-auto w-full px-5 sm:px-7 pt-4 flex-grow flex flex-col">
         {currentView === 'lobby' ? (
-          <div className="space-y-6 animate-fade-in pb-12">
-            {/* Step Navigation Flow Bar */}
-            <div className="panel-frame p-3 sm:p-4 rounded-2xl border gold-border flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  onClick={() => {
-                    soundEngine.playClickSound();
-                    setActiveTab('mode');
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-cinzel transition-all ${
-                    activeTab === 'mode'
-                      ? 'btn-primary shadow-lg shadow-[#6E56CF]/40 text-white'
-                      : 'bg-[#14121D] border border-[#2D2842] text-[#9E98B0] hover:text-[#F4F2F7] hover:border-[#6E56CF]/40'
-                  }`}
-                >
-                  <span className="w-4 h-4 rounded-full bg-white/20 text-[10px] flex items-center justify-center font-sans">
-                    1
-                  </span>
-                  <span>Mode Laga</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    soundEngine.playClickSound();
-                    setActiveTab('character');
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-cinzel transition-all ${
-                    activeTab === 'character'
-                      ? 'btn-primary shadow-lg shadow-[#6E56CF]/40 text-white'
-                      : 'bg-[#14121D] border border-[#2D2842] text-[#9E98B0] hover:text-[#F4F2F7] hover:border-[#6E56CF]/40'
-                  }`}
-                >
-                  <span className="w-4 h-4 rounded-full bg-white/20 text-[10px] flex items-center justify-center font-sans">
-                    2
-                  </span>
-                  <span>Pilih Petarung ({selectedChar.name})</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    soundEngine.playClickSound();
-                    setActiveTab('map');
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-cinzel transition-all ${
-                    activeTab === 'map'
-                      ? 'btn-primary shadow-lg shadow-[#6E56CF]/40 text-white'
-                      : 'bg-[#14121D] border border-[#2D2842] text-[#9E98B0] hover:text-[#F4F2F7] hover:border-[#6E56CF]/40'
-                  }`}
-                >
-                  <span className="w-4 h-4 rounded-full bg-white/20 text-[10px] flex items-center justify-center font-sans">
-                    3
-                  </span>
-                  <span>Pilih Medan ({selectedMap.name})</span>
-                </button>
-              </div>
-
-              {/* Quick Gacha Trigger */}
+          <div className="space-y-6 animate-fade-in flex-grow flex flex-col">
+            {/* Step Navigation Tabs with Proper Breathing Room (margin: 20px 0, gap: 12px) */}
+            <div
+              className="flex flex-wrap items-center"
+              style={{ margin: '16px 0 20px 0', gap: '12px' }}
+            >
+              {/* Step 1: Mode Laga */}
               <button
                 onClick={() => {
                   soundEngine.playClickSound();
-                  setIsGachaOpen(true);
+                  setActiveTab('mode');
+                  setIsBotMatch(true);
                 }}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37]/25 transition-all text-xs font-bold font-cinzel shadow-sm"
+                className={`flex-1 min-w-[200px] flex items-center gap-3.5 transition-all duration-200 cursor-pointer text-left border ${
+                  activeTab === 'mode'
+                    ? 'bg-gradient-to-r from-[#6E56CF]/30 via-[#1F1B2E] to-[#6E56CF]/20 border-[#D4AF37] shadow-lg shadow-[#6E56CF]/20'
+                    : 'bg-[#14121D] border-[#2D2842] text-[#9E98B0] hover:border-[#6E56CF]/60 hover:text-[#F4F2F7]'
+                }`}
+                style={{ padding: '12px 24px', borderRadius: '8px' }}
               >
-                <IconTemple size={16} color="#D4AF37" />
-                <span>Kuil Pemanggilan Gacha</span>
-              </button>
-            </div>
-
-            {/* Persistent Battle Readiness Deck */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#14121D] via-[#1F1B2E] to-[#14121D] border border-[#D4AF37]/40 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex flex-wrap items-center gap-4 text-left">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-[#6E56CF]/25 border border-[#6E56CF]/50 flex items-center justify-center text-[#D4AF37]">
-                    <IconSwords size={22} color="#D4AF37" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-[#9E98B0] font-semibold block">
-                      Petarung Dipilih:
-                    </span>
-                    <span className="font-cinzel font-black text-sm sm:text-base text-[#F4F2F7]">
-                      {selectedChar.name} ({selectedChar.origin})
-                    </span>
-                  </div>
-                </div>
-
-                <div className="hidden sm:block h-8 w-px bg-[#2D2842]" />
-
+                <span
+                  className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
+                    activeTab === 'mode'
+                      ? 'bg-[#D4AF37] text-[#0B0A0F]'
+                      : 'bg-[#1F1B2E] text-[#9E98B0] border border-[#2D2842]'
+                  }`}
+                >
+                  1
+                </span>
                 <div>
-                  <span className="text-[10px] uppercase tracking-wider text-[#9E98B0] font-semibold block">
-                    Medan Laga:
+                  <span
+                    className={`font-cinzel text-xs sm:text-sm font-bold block ${
+                      activeTab === 'mode' ? 'text-[#F4F2F7]' : 'text-[#9E98B0]'
+                    }`}
+                  >
+                    1. Mode Pertandingan
                   </span>
-                  <span className="font-cinzel font-bold text-xs sm:text-sm text-[#D4AF37]">
+                  <span className="text-[11px] text-[#D4AF37] block mt-0.5 font-medium">
+                    {modeSublabel}
+                  </span>
+                </div>
+              </button>
+
+              {/* Step 2: Pilih Petarung */}
+              <button
+                onClick={() => {
+                  soundEngine.playClickSound();
+                  setActiveTab('character');
+                }}
+                className={`flex-1 min-w-[200px] flex items-center gap-3.5 transition-all duration-200 cursor-pointer text-left border ${
+                  activeTab === 'character'
+                    ? 'bg-gradient-to-r from-[#6E56CF]/30 via-[#1F1B2E] to-[#6E56CF]/20 border-[#D4AF37] shadow-lg shadow-[#6E56CF]/20'
+                    : 'bg-[#14121D] border-[#2D2842] text-[#9E98B0] hover:border-[#6E56CF]/60 hover:text-[#F4F2F7]'
+                }`}
+                style={{ padding: '12px 24px', borderRadius: '8px' }}
+              >
+                <span
+                  className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
+                    activeTab === 'character'
+                      ? 'bg-[#D4AF37] text-[#0B0A0F]'
+                      : 'bg-[#1F1B2E] text-[#9E98B0] border border-[#2D2842]'
+                  }`}
+                >
+                  2
+                </span>
+                <div>
+                  <span
+                    className={`font-cinzel text-xs sm:text-sm font-bold block ${
+                      activeTab === 'character' ? 'text-[#F4F2F7]' : 'text-[#9E98B0]'
+                    }`}
+                  >
+                    2. Pilih Ksatria
+                  </span>
+                  <span className="text-[11px] text-[#D4AF37] block mt-0.5 font-medium truncate max-w-[150px]">
+                    {selectedChar.name} ({selectedChar.origin})
+                  </span>
+                </div>
+              </button>
+
+              {/* Step 3: Pilih Medan */}
+              <button
+                onClick={() => {
+                  soundEngine.playClickSound();
+                  setActiveTab('map');
+                }}
+                className={`flex-1 min-w-[200px] flex items-center gap-3.5 transition-all duration-200 cursor-pointer text-left border ${
+                  activeTab === 'map'
+                    ? 'bg-gradient-to-r from-[#6E56CF]/30 via-[#1F1B2E] to-[#6E56CF]/20 border-[#D4AF37] shadow-lg shadow-[#6E56CF]/20'
+                    : 'bg-[#14121D] border-[#2D2842] text-[#9E98B0] hover:border-[#6E56CF]/60 hover:text-[#F4F2F7]'
+                }`}
+                style={{ padding: '12px 24px', borderRadius: '8px' }}
+              >
+                <span
+                  className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
+                    activeTab === 'map'
+                      ? 'bg-[#D4AF37] text-[#0B0A0F]'
+                      : 'bg-[#1F1B2E] text-[#9E98B0] border border-[#2D2842]'
+                  }`}
+                >
+                  3
+                </span>
+                <div>
+                  <span
+                    className={`font-cinzel text-xs sm:text-sm font-bold block ${
+                      activeTab === 'map' ? 'text-[#F4F2F7]' : 'text-[#9E98B0]'
+                    }`}
+                  >
+                    3. Pilih Medan Laga
+                  </span>
+                  <span className="text-[11px] text-[#D4AF37] block mt-0.5 font-medium truncate max-w-[150px]">
                     {selectedMap.name}
                   </span>
                 </div>
-
-                <div className="hidden sm:block h-8 w-px bg-[#2D2842]" />
-
-                <div>
-                  <span className="text-[10px] uppercase tracking-wider text-[#9E98B0] font-semibold block">
-                    Mode Pertandingan:
-                  </span>
-                  <span className="text-xs sm:text-sm font-semibold text-[#2E9E6B]">
-                    {isBotMatch ? `Bot (${botDifficulty})` : `Lawan Pemain (${currentRoom?.code || 'Acak'})`}
-                  </span>
-                </div>
-              </div>
-
-              {/* 1-Click Launch Button */}
-              <button
-                onClick={() => {
-                  soundEngine.playMatchStartSound();
-                  if (isBotMatch) {
-                    handleStartBotMatch(botDifficulty);
-                  } else {
-                    handleStartPlayerMatch(currentRoom || {
-                      code: 'QUICK8',
-                      hostName: 'Penantang Langsung',
-                      hostAddress: '0x14121d5a7b2139048a123f81e35a92c8192a7702',
-                      mapId: selectedMapId,
-                      isPrivate: false,
-                      isReady: true
-                    });
-                  }
-                }}
-                className="w-full md:w-auto px-8 py-3.5 rounded-xl btn-gold text-xs sm:text-sm font-black font-cinzel shadow-xl shadow-[#D4AF37]/30 whitespace-nowrap"
-              >
-                Masuk Arena Laga Sekarang
               </button>
             </div>
 
-            {/* Tab 1: Lobby Mode View */}
-            {activeTab === 'mode' && (
-              <div className="animate-fade-in">
-                <LobbyView
-                  selectedMapId={selectedMapId}
-                  selectedCharId={selectedCharId}
-                  demoMode={demoMode}
-                  onStartMatchVsBot={handleStartBotMatch}
-                  onStartMatchVsPlayer={handleStartPlayerMatch}
-                  onOpenHelp={() => setHelpSection('ruang_tunggu')}
+            {/* UPGRADE TO A 2-COLUMN "AAA FIGHTING GAME LOBBY" LAYOUT (12 Columns) */}
+            <div
+              className="grid grid-cols-1 lg:grid-cols-12 items-start flex-grow"
+              style={{ gap: '24px' }}
+            >
+              {/* Left Column (4 Columns): Live Fighter & Arena Showcase Card */}
+              <div className="lg:col-span-4 sticky top-20">
+                <LobbyShowcaseCard
+                  selectedChar={selectedChar}
+                  selectedMap={selectedMap}
+                  onNavigateTab={tab => setActiveTab(tab)}
                 />
               </div>
-            )}
 
-            {/* Tab 2: Character Selection View */}
-            {activeTab === 'character' && (
-              <div className="panel-frame p-6 sm:p-8 rounded-2xl border gold-border animate-fade-in">
-                <CharacterSelectView
-                  selectedId={selectedCharId}
-                  onSelectCharacter={setSelectedCharId}
-                  playerProfile={playerProfile}
-                  demoMode={demoMode}
-                  onOpenGacha={() => setIsGachaOpen(true)}
-                  onOpenHelp={() => setHelpSection('pemilihan_karakter')}
-                />
-              </div>
-            )}
+              {/* Right Column (8 Columns): Active Step Configuration Panel */}
+              <div className="lg:col-span-8 panel-frame p-6 sm:p-7 rounded-2xl border gold-border">
+                {activeTab === 'mode' && (
+                  <div
+                    className="animate-fade-in"
+                    style={{ transition: 'opacity 180ms ease-out' }}
+                  >
+                    <LobbyView
+                      selectedMapId={selectedMapId}
+                      demoMode={demoMode}
+                      botDifficulty={botDifficulty}
+                      onSelectDifficulty={diff => {
+                        setBotDifficulty(diff);
+                        setIsBotMatch(true);
+                      }}
+                      onSelectRoom={handleSelectRoom}
+                      onOpenHelp={() => setHelpSection('ruang_tunggu')}
+                    />
+                  </div>
+                )}
 
-            {/* Tab 3: Map Selection View */}
-            {activeTab === 'map' && (
-              <div className="panel-frame p-6 sm:p-8 rounded-2xl border gold-border animate-fade-in">
-                <MapSelectView
-                  selectedMapId={selectedMapId}
-                  onSelectMap={setSelectedMapId}
-                  onOpenHelp={() => setHelpSection('pemilihan_peta')}
-                />
+                {activeTab === 'character' && (
+                  <div
+                    className="animate-fade-in"
+                    style={{ transition: 'opacity 180ms ease-out' }}
+                  >
+                    <CharacterSelectView
+                      selectedId={selectedCharId}
+                      onSelectCharacter={setSelectedCharId}
+                      playerProfile={playerProfile}
+                      demoMode={demoMode}
+                      onOpenGacha={() => setIsGachaOpen(true)}
+                      onOpenHelp={() => setHelpSection('pemilihan_karakter')}
+                    />
+                  </div>
+                )}
+
+                {activeTab === 'map' && (
+                  <div
+                    className="animate-fade-in"
+                    style={{ transition: 'opacity 180ms ease-out' }}
+                  >
+                    <MapSelectView
+                      selectedMapId={selectedMapId}
+                      onSelectMap={setSelectedMapId}
+                      onOpenHelp={() => setHelpSection('pemilihan_peta')}
+                    />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+
+            {/* ONE Unified Bottom Action Dock */}
+            <BottomActionDock
+              selectedChar={selectedChar}
+              selectedMap={selectedMap}
+              isBotMatch={isBotMatch}
+              botDifficulty={botDifficulty}
+              currentRoom={currentRoom}
+              onLaunchMatch={handleLaunchMatch}
+              demoMode={demoMode}
+            />
           </div>
         ) : (
           /* Match Arena View */
@@ -336,7 +367,11 @@ export const App: React.FC = () => {
               p1CharId={selectedCharId}
               p2CharId={opponentCharId}
               p1Name="Ksatria Anda"
-              p2Name={isBotMatch ? `Bot Mythomachy (${botDifficulty})` : `Lawan ${currentRoom?.code || 'Online'}`}
+              p2Name={
+                isBotMatch
+                  ? `Bot Mythomachy (${diffSublabel})`
+                  : `Lawan ${currentRoom?.code || 'Online'}`
+              }
               isBotMatch={isBotMatch}
               botDifficulty={botDifficulty}
               playerProfile={playerProfile}

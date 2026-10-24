@@ -334,12 +334,13 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
   // Settle Match On-Chain Silently & Award Relics
   const handleMatchSettlement = (winningPlayer: 'player1' | 'player2') => {
     const isP1 = winningPlayer === 'player1';
+    const relicReward = !isBotMatch ? 25 : botDifficulty === 'easy' ? 10 : botDifficulty === 'medium' ? 20 : 35;
     if (isP1) {
       const updated = {
         ...playerProfile,
         victories: playerProfile.victories + 1,
         matchesPlayed: playerProfile.matchesPlayed + 1,
-        relicShards: playerProfile.relicShards + 15
+        relicShards: playerProfile.relicShards + relicReward
       };
       saveStoredPlayerProfile(updated);
       onProfileUpdated(updated);
@@ -468,7 +469,7 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
           winnerChar={winner === 'player1' ? p1Char : p2Char}
           isP1Winner={winner === 'player1'}
           onReturnToLobby={onExitMatch}
-          relicsAwarded={15}
+          relicsAwarded={!isBotMatch ? 25 : botDifficulty === 'easy' ? 10 : botDifficulty === 'medium' ? 20 : 35}
         />
       )}
     </div>

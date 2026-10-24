@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { MapId, RoomInfo, AIDifficulty, CharacterId } from '../types/game';
+import { MapId, RoomInfo, AIDifficulty } from '../types/game';
 import { getPublicRooms, createNewRoom, getJoinRoomUrl } from '../services/roomService';
-import { CHARACTERS } from '../config/characters';
-import { MAPS } from '../config/maps';
 import { QRCodeSvg } from './QRCodeSvg';
 import {
   IconSwords,
@@ -10,38 +8,33 @@ import {
   IconUser,
   IconCopy,
   IconCheck,
-  IconRelicShard,
-  IconTrophy
+  IconRelicShard
 } from './SvgIcons';
 import { soundEngine } from '../audio/soundEngine';
 
 interface LobbyViewProps {
   selectedMapId: MapId;
-  selectedCharId: CharacterId;
   demoMode: boolean;
-  onStartMatchVsBot: (difficulty: AIDifficulty) => void;
-  onStartMatchVsPlayer: (room: RoomInfo) => void;
+  botDifficulty: AIDifficulty;
+  onSelectDifficulty: (diff: AIDifficulty) => void;
+  onSelectRoom: (room: RoomInfo) => void;
   onOpenHelp: () => void;
 }
 
 export const LobbyView: React.FC<LobbyViewProps> = ({
   selectedMapId,
-  selectedCharId,
   demoMode,
-  onStartMatchVsBot,
-  onStartMatchVsPlayer,
+  botDifficulty,
+  onSelectDifficulty,
+  onSelectRoom,
   onOpenHelp
 }) => {
   const [activeTab, setActiveTab] = useState<'bot' | 'pvp'>('bot');
-  const [botDifficulty, setBotDifficulty] = useState<AIDifficulty>('medium');
   const [publicRooms, setPublicRooms] = useState<RoomInfo[]>([]);
   const [createdRoom, setCreatedRoom] = useState<RoomInfo | null>(null);
   const [roomType, setRoomType] = useState<'public' | 'private'>('public');
   const [customRoomCode, setCustomRoomCode] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
-
-  const selectedChar = CHARACTERS[selectedCharId];
-  const selectedMap = MAPS[selectedMapId];
 
   useEffect(() => {
     setPublicRooms(getPublicRooms());
@@ -56,6 +49,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
     const room = createNewRoom(selectedMapId, roomType === 'private', code);
     setCreatedRoom(room);
     setPublicRooms(getPublicRooms());
+    onSelectRoom(room);
   };
 
   const handleCopyLink = () => {
@@ -66,10 +60,37 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
+  const difficultyList = [
+    {
+      id: 'easy' as const,
+      label: 'Santai (Pemula)',
+      desc: 'Jeda reflek santai (~450ms). Cocok untuk melatih kombo dan pergerakan tanpa tekanan agresi berat.',
+      badge: 'Santai',
+      badgeColor: 'text-[#9E98B0] bg-[#2D2842]/40 border-[#2D2842]',
+      relicReward: 10
+    },
+    {
+      id: 'medium' as const,
+      label: 'Taktis (Standar)',
+      desc: 'Reflek taktis (~220ms). Menjaga jarak optimal, menangkis serangan berat, dan melancarkan serangan balasan.',
+      badge: 'Direkomendasikan',
+      badgeColor: 'text-[#D4AF37] bg-[#D4AF37]/15 border-[#D4AF37]/40',
+      relicReward: 20
+    },
+    {
+      id: 'hard' as const,
+      label: 'Legenda (Turnamen)',
+      desc: 'Reflek instan (~80ms). Eksekusi kombo beruntun tanpa ampun, penangkisan proyektil, dan jurus pamungkas mematikan.',
+      badge: 'Tantangan Tinggi',
+      badgeColor: 'text-[#D9383A] bg-[#D9383A]/15 border-[#D9383A]/40',
+      relicReward: 35
+    }
+  ];
+
   return (
     <div className="w-full space-y-6 text-left">
-      {/* Top Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#2D2842]">
+      {/* Top Header Controls with Segmented Switch */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#2D2842]">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-xl bg-[#6E56CF]/20 border border-[#6E56CF]/40 text-[#D4AF37]">
             <IconSwords size={20} color="#D4AF37" />
@@ -77,7 +98,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base sm:text-lg font-black text-[#F4F2F7] font-cinzel">
-                Pilih Mode Pertandingan
+                Mode Pertandingan
               </h2>
               <button
                 onClick={onOpenHelp}
@@ -93,18 +114,19 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           </div>
         </div>
 
-        {/* Tab Selector */}
-        <div className="flex items-center gap-1.5 bg-[#0B0A0F] p-1 rounded-xl border border-[#2D2842]">
+        {/* Segmented Switch: Lawan Bot Cerdas / Ruang Antrean Pemain with padding: 8px 18px */}
+        <div className="flex items-center gap-1.5 bg-[#0B0A0F] p-1.5 rounded-xl border border-[#2D2842] self-start sm:self-auto">
           <button
             onClick={() => {
               soundEngine.playClickSound();
               setActiveTab('bot');
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 rounded-lg text-xs font-bold transition-all ${
               activeTab === 'bot'
                 ? 'bg-[#6E56CF] text-white shadow-md shadow-[#6E56CF]/40'
                 : 'text-[#9E98B0] hover:text-[#F4F2F7]'
             }`}
+            style={{ padding: '8px 18px' }}
           >
             <IconBot size={16} />
             <span>Lawan Bot Cerdas</span>
@@ -114,11 +136,12 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               soundEngine.playClickSound();
               setActiveTab('pvp');
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center gap-2 rounded-lg text-xs font-bold transition-all ${
               activeTab === 'pvp'
                 ? 'bg-[#6E56CF] text-white shadow-md shadow-[#6E56CF]/40'
                 : 'text-[#9E98B0] hover:text-[#F4F2F7]'
             }`}
+            style={{ padding: '8px 18px' }}
           >
             <IconUser size={16} />
             <span>Ruang Antrean Pemain</span>
@@ -126,120 +149,83 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
         </div>
       </div>
 
-      {/* Mode 1: Bot Mythomachy State Machine AI */}
+      {/* Mode 1: Bot Mythomachy Difficulty Cards */}
       {activeTab === 'bot' && (
-        <div className="space-y-6">
-          {/* Difficulty Level Cards */}
-          <div className="space-y-2.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] block font-cinzel">
-              Tingkat Kesulitan Bot Cerdas:
-            </label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-              {(
-                [
-                  {
-                    id: 'easy',
-                    label: 'Santai (Pemula)',
-                    desc: 'Jeda reflek santai (~450ms). Cocok untuk menghafal kombo jurus dan mekanika keahlian tanpa tekanan berat.',
-                    badge: 'Santai'
-                  },
-                  {
-                    id: 'medium',
-                    label: 'Taktis (Standar)',
-                    desc: 'Reflek taktis (~220ms). Mampu menangkis serangan berat, menjaga jarak ideal, dan memanfaatkan jeda keahlian.',
-                    badge: 'Direkomendasikan'
-                  },
-                  {
-                    id: 'hard',
-                    label: 'Legenda (Turnamen)',
-                    desc: 'Reflek instan (~80ms). Eksekusi kombo beruntun mematikan, lompatan mengejutkan, dan pamungkas langsung saat terisi.',
-                    badge: 'Tantangan Tinggi'
-                  }
-                ] as const
-              ).map(d => {
-                const isSelected = botDifficulty === d.id;
-                return (
-                  <button
-                    key={d.id}
-                    onClick={() => {
-                      soundEngine.playClickSound();
-                      setBotDifficulty(d.id);
+        <div className="space-y-4">
+          <label className="text-xs font-bold uppercase tracking-wider text-[#D4AF37] block font-cinzel">
+            Tingkat Kesulitan Bot Cerdas:
+          </label>
+
+          <div
+            className="grid grid-cols-1 md:grid-cols-3"
+            style={{ gap: '16px' }}
+          >
+            {difficultyList.map(d => {
+              const isSelected = botDifficulty === d.id;
+              return (
+                <div
+                  key={d.id}
+                  onClick={() => {
+                    soundEngine.playClickSound();
+                    onSelectDifficulty(d.id);
+                  }}
+                  className={`rounded-2xl border text-left transition-all duration-200 cursor-pointer relative group ${
+                    isSelected
+                      ? 'bg-gradient-to-b from-[#1F1B2E] to-[#14121D] border-[#D4AF37] shadow-xl shadow-[#D4AF37]/15 ring-1 ring-[#D4AF37]'
+                      : 'bg-[#14121D] border-[#2D2842] text-[#9E98B0] hover:border-[#6E56CF]/60 hover:-translate-y-1'
+                  }`}
+                  style={{
+                    padding: '24px',
+                    minHeight: '210px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  {/* Top content */}
+                  <div>
+                    {/* Badge */}
+                    <div style={{ marginBottom: '8px' }}>
+                      <span
+                        className={`inline-block text-[11px] font-bold uppercase tracking-wider rounded border ${d.badgeColor}`}
+                        style={{ padding: '4px 12px' }}
+                      >
+                        {d.badge}
+                      </span>
+                    </div>
+
+                    <h4 className="font-bold text-base font-cinzel text-[#F4F2F7] mt-1">
+                      {d.label}
+                    </h4>
+
+                    <p className="text-xs text-[#9E98B0] mt-2 leading-relaxed">
+                      {d.desc}
+                    </p>
+                  </div>
+
+                  {/* Clean Divider Line separating description from reward and status */}
+                  <div
+                    className="flex items-center justify-between text-xs"
+                    style={{
+                      borderTop: '1px solid #2D2842',
+                      paddingTop: '12px',
+                      marginTop: '16px'
                     }}
-                    className={`p-4 rounded-xl border text-left transition-all relative flex flex-col justify-between ${
-                      isSelected
-                        ? 'bg-gradient-to-b from-[#1F1B2E] to-[#14121D] border-[#D4AF37] shadow-xl shadow-[#6E56CF]/20 ring-1 ring-[#D4AF37]'
-                        : 'bg-[#14121D] border-[#2D2842] text-[#9E98B0] hover:border-[#6E56CF]/50'
-                    }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span
-                          className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${
-                            isSelected
-                              ? 'bg-[#D4AF37]/20 text-[#D4AF37] border border-[#D4AF37]/40'
-                              : 'bg-[#2D2842]/40 text-[#9E98B0]'
-                          }`}
-                        >
-                          {d.badge}
-                        </span>
-                        {isSelected && (
-                          <span className="w-2 h-2 rounded-full bg-[#2E9E6B] shadow-sm shadow-[#2E9E6B]" />
-                        )}
-                      </div>
-
-                      <h4 className="font-bold text-sm sm:text-base font-cinzel text-[#F4F2F7]">
-                        {d.label}
-                      </h4>
-                      <p className="text-xs text-[#9E98B0] mt-1.5 leading-relaxed">
-                        {d.desc}
-                      </p>
-                    </div>
-
-                    <div className="mt-4 pt-2.5 border-t border-[#2D2842]/60 flex items-center justify-between text-[11px]">
-                      <span className="text-[#2E9E6B] font-semibold flex items-center gap-1">
-                        <IconRelicShard size={13} color="#2E9E6B" /> +15 Pecahan Menang
-                      </span>
-                      <span className={`font-cinzel font-bold ${isSelected ? 'text-[#D4AF37]' : 'text-[#9E98B0]'}`}>
-                        {isSelected ? 'Dipilih' : 'Pilih Level'}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Action Launch Bar */}
-          <div className="p-5 rounded-2xl bg-gradient-to-r from-[#14121D] to-[#1F1B2E] border border-[#2D2842] flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-[#6E56CF]/20 border border-[#6E56CF]/40 flex items-center justify-center flex-shrink-0 text-[#D4AF37]">
-                <IconTrophy size={24} color="#D4AF37" />
-              </div>
-              <div className="space-y-0.5 text-left">
-                <div className="flex items-center gap-2">
-                  <span className="font-cinzel font-bold text-sm text-[#F4F2F7]">
-                    Ksatria: {selectedChar.name}
-                  </span>
-                  <span className="text-[#9E98B0] text-xs">|</span>
-                  <span className="text-xs text-[#D4AF37] font-semibold">
-                    Medan: {selectedMap.name}
-                  </span>
+                    <span className="text-[#2E9E6B] font-semibold flex items-center gap-1.5 font-mono">
+                      <IconRelicShard size={14} color="#2E9E6B" /> +{d.relicReward} Pecahan Menang
+                    </span>
+                    <span
+                      className={`font-cinzel font-bold text-xs ${
+                        isSelected ? 'text-[#D4AF37]' : 'text-[#9E98B0] group-hover:text-white'
+                      }`}
+                    >
+                      {isSelected ? 'DIPILIH' : 'PILIH LEVEL'}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-xs text-[#9E98B0]">
-                  Latihan mandiri instan tanpa antrean dengan sinkronisasi server cepat.
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                soundEngine.playMatchStartSound();
-                onStartMatchVsBot(botDifficulty);
-              }}
-              className="w-full md:w-auto px-10 py-4 rounded-xl btn-primary text-sm font-black font-cinzel shadow-2xl shadow-[#6E56CF]/40 whitespace-nowrap"
-            >
-              Mulai Laga vs Bot Sekarang
-            </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -249,7 +235,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Create Room Form */}
-            <div className="p-5 rounded-2xl bg-[#0B0A0F]/80 border border-[#2D2842] space-y-4">
+            <div className="p-6 rounded-2xl bg-[#0B0A0F]/80 border border-[#2D2842] space-y-4">
               <h3 className="font-cinzel text-sm font-bold uppercase tracking-wider text-[#D4AF37]">
                 Buat Ruang Tanding Baru
               </h3>
@@ -319,7 +305,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
 
                   {/* Inline SVG QR Code */}
                   <div className="flex flex-col sm:flex-row items-center gap-4 bg-[#14121D] p-3.5 rounded-xl border border-[#2D2842]">
-                    <QRCodeSvg value={getJoinRoomUrl(createdRoom.code)} size={130} />
+                    <QRCodeSvg value={getJoinRoomUrl(createdRoom.code)} size={120} />
                     <div className="text-xs text-[#9E98B0] space-y-1">
                       <strong className="text-[#F4F2F7] block">Pindai dari Perangkat Lain:</strong>
                       <p>
@@ -327,12 +313,12 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                       </p>
                       <button
                         onClick={() => {
-                          soundEngine.playMatchStartSound();
-                          onStartMatchVsPlayer(createdRoom);
+                          soundEngine.playClickSound();
+                          onSelectRoom(createdRoom);
                         }}
                         className="mt-2 px-4 py-2 rounded-lg btn-primary text-xs font-bold font-cinzel"
                       >
-                        Masuk Arena Ruang Ini
+                        Pilih Ruang Ini
                       </button>
                     </div>
                   </div>
@@ -341,7 +327,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
             </div>
 
             {/* Public Rooms List for 1-Click Joining */}
-            <div className="p-5 rounded-2xl bg-[#0B0A0F]/80 border border-[#2D2842] flex flex-col justify-between space-y-4">
+            <div className="p-6 rounded-2xl bg-[#0B0A0F]/80 border border-[#2D2842] flex flex-col justify-between space-y-4">
               <div>
                 <h3 className="font-cinzel text-sm font-bold uppercase tracking-wider text-[#D4AF37] mb-3">
                   Daftar Ruang Publik Terbuka
@@ -367,12 +353,12 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
                       </div>
                       <button
                         onClick={() => {
-                          soundEngine.playMatchStartSound();
-                          onStartMatchVsPlayer(r);
+                          soundEngine.playClickSound();
+                          onSelectRoom(r);
                         }}
                         className="px-4 py-2 rounded-lg btn-primary text-xs font-bold font-cinzel"
                       >
-                        Gabung
+                        Pilih
                       </button>
                     </div>
                   ))}
@@ -382,13 +368,13 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
               {/* Quick Match Button */}
               <button
                 onClick={() => {
-                  soundEngine.playMatchStartSound();
+                  soundEngine.playClickSound();
                   const targetRoom = publicRooms[0] || createNewRoom(selectedMapId, false, 'QUICK8');
-                  onStartMatchVsPlayer(targetRoom);
+                  onSelectRoom(targetRoom);
                 }}
-                className="w-full py-3.5 rounded-xl btn-gold text-xs font-black font-cinzel shadow-lg shadow-[#D4AF37]/20"
+                className="w-full py-3 rounded-xl btn-gold text-xs font-black font-cinzel shadow-lg shadow-[#D4AF37]/20"
               >
-                Lawan Pemain Acak (Antrean Cepat)
+                Pilih Pemain Acak (Antrean Cepat)
               </button>
             </div>
           </div>

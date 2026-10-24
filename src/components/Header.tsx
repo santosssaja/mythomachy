@@ -80,15 +80,15 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Action Controls */}
         <div className="flex items-center gap-2.5 sm:gap-3">
-          {/* Kuil Pemanggilan Button */}
+          {/* Kuil Pemanggilan Button (Prestigious Gold Border) */}
           <button
             onClick={() => {
               soundEngine.playClickSound();
               onOpenGacha();
             }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#6E56CF]/20 border border-[#6E56CF] text-[#F4F2F7] hover:bg-[#6E56CF]/30 transition-all text-xs font-bold font-cinzel"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#D4AF37]/20 via-[#1F1B2E] to-[#D4AF37]/15 border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37]/30 hover:shadow-lg hover:shadow-[#D4AF37]/25 hover:-translate-y-0.5 active:translate-y-0 transition-all text-xs font-bold font-cinzel tracking-wider shadow-sm"
           >
-            <IconTemple size={15} color="#D4AF37" />
+            <IconTemple size={16} color="#D4AF37" />
             <span className="hidden sm:inline">Kuil Pemanggilan</span>
           </button>
 

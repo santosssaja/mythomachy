@@ -78,12 +78,7 @@ export const anubisModule: CharacterModule = {
   },
 
   animate(components, state, stateTimer, facing, dt) {
-    const { root, torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg } = components;
-    if (facing !== 0) {
-      root.rotation.y = facing === 1 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-      root.rotation.y = 0;
-    }
+    const { torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg } = components;
     const t = stateTimer;
 
     switch (state) {
@@ -95,7 +90,6 @@ export const anubisModule: CharacterModule = {
         rightArm.rotation.x = -0.5;
         leftLeg.rotation.x = 0;
         rightLeg.rotation.x = 0;
-        root.rotation.z = 0;
         break;
 
       case 'WALK': {
@@ -105,13 +99,12 @@ export const anubisModule: CharacterModule = {
         rightLeg.rotation.x = -cycle * 0.5;
         leftArm.rotation.x = -cycle * 0.35;
         rightArm.rotation.x = -0.5 + cycle * 0.25;
-        root.rotation.z = 0;
         break;
       }
 
       case 'DASH':
         torsoGroup.position.y = 0.88;
-        root.rotation.z = -facing * 0.42;
+        torsoGroup.rotation.x = 0.35;
         leftArm.rotation.x = 0.9;
         rightArm.rotation.x = -1.2;
         break;
@@ -153,7 +146,7 @@ export const anubisModule: CharacterModule = {
 
       case 'HIT':
         torsoGroup.position.y = 0.95;
-        root.rotation.z = facing * 0.35;
+        torsoGroup.rotation.x = -0.28;
         headGroup.rotation.x = 0.3;
         break;
     }

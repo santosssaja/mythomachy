@@ -81,12 +81,7 @@ export const quetzalcoatlModule: CharacterModule = {
   },
 
   animate(components, state, stateTimer, facing, dt) {
-    const { root, torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, leftWing, rightWing } = components;
-    if (facing !== 0) {
-      root.rotation.y = facing === 1 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-      root.rotation.y = 0;
-    }
+    const { torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, leftWing, rightWing } = components;
     const t = stateTimer;
 
     // Flapping wings
@@ -102,7 +97,6 @@ export const quetzalcoatlModule: CharacterModule = {
         // Serpentine sinuous sway
         torsoGroup.position.y = 1.02 + Math.sin(t * 3.0) * 0.03;
         torsoGroup.rotation.y = Math.sin(t * 2.5) * 0.08;
-        root.rotation.z = 0;
         break;
 
       case 'WALK': {
@@ -115,7 +109,7 @@ export const quetzalcoatlModule: CharacterModule = {
 
       case 'DASH':
         torsoGroup.position.y = 0.85;
-        root.rotation.z = -facing * 0.5;
+        torsoGroup.rotation.x = 0.38;
         break;
 
       case 'ATTACK': {
@@ -141,11 +135,11 @@ export const quetzalcoatlModule: CharacterModule = {
         const p = Math.min(1, t / 1.25);
         if (p < 0.5) {
           torsoGroup.position.y = 1.35;
-          torsoGroup.rotation.x = 0.3; // Reared back
+          torsoGroup.rotation.x = -0.3; // Reared back
           leftArm.rotation.x = -1.2;
           rightArm.rotation.x = -1.2;
         } else {
-          torsoGroup.rotation.x = -0.4; // Thrust forward breathing beam
+          torsoGroup.rotation.x = 0.4; // Thrust forward breathing beam
           torsoGroup.position.y = 0.9;
         }
         break;
@@ -153,7 +147,7 @@ export const quetzalcoatlModule: CharacterModule = {
 
       case 'HIT':
         torsoGroup.position.y = 0.95;
-        root.rotation.z = facing * 0.35;
+        torsoGroup.rotation.x = -0.28;
         break;
     }
   }

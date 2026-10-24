@@ -74,12 +74,7 @@ export const athenaModule: CharacterModule = {
   },
 
   animate(components, state, stateTimer, facing, dt) {
-    const { root, torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg } = components;
-    if (facing !== 0) {
-      root.rotation.y = facing === 1 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-      root.rotation.y = 0;
-    }
+    const { torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg } = components;
     const t = stateTimer;
 
     switch (state) {
@@ -93,7 +88,6 @@ export const athenaModule: CharacterModule = {
         rightArm.rotation.z = -0.1;
         leftLeg.rotation.x = 0;
         rightLeg.rotation.x = 0;
-        root.rotation.z = 0;
         break;
 
       case 'WALK': {
@@ -103,13 +97,12 @@ export const athenaModule: CharacterModule = {
         rightLeg.rotation.x = -cycle * 0.55;
         leftArm.rotation.x = -0.5 - cycle * 0.2; // Shield kept in guard
         rightArm.rotation.x = -0.4 + cycle * 0.4;
-        root.rotation.z = 0;
         break;
       }
 
       case 'DASH':
         torsoGroup.position.y = 0.88;
-        root.rotation.z = -facing * 0.4;
+        torsoGroup.rotation.x = 0.35;
         leftArm.rotation.x = -1.2; // Shield point forward
         rightArm.rotation.x = 0.6; // Spear trailing
         leftLeg.rotation.x = 0.4;
@@ -160,7 +153,7 @@ export const athenaModule: CharacterModule = {
 
       case 'HIT':
         torsoGroup.position.y = 0.95;
-        root.rotation.z = facing * 0.3;
+        torsoGroup.rotation.x = -0.28;
         leftArm.rotation.x = 0.5;
         rightArm.rotation.x = 0.5;
         break;

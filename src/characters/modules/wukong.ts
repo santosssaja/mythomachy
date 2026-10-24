@@ -70,12 +70,7 @@ export const wukongModule: CharacterModule = {
   },
 
   animate(components, state, stateTimer, facing, dt) {
-    const { root, torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, weapon } = components;
-    if (facing !== 0) {
-      root.rotation.y = facing === 1 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-      root.rotation.y = 0;
-    }
+    const { torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, weapon } = components;
     const t = stateTimer;
 
     switch (state) {
@@ -85,7 +80,6 @@ export const wukongModule: CharacterModule = {
         headGroup.rotation.z = Math.sin(t * 3.0) * 0.12;
         leftArm.rotation.x = -0.4;
         rightArm.rotation.x = -0.8;
-        root.rotation.z = 0;
         break;
 
       case 'WALK': {
@@ -99,7 +93,7 @@ export const wukongModule: CharacterModule = {
       case 'DASH':
         // Akrobatik somersault / cloud roll
         torsoGroup.position.y = 0.78;
-        root.rotation.z = -facing * 0.6;
+        torsoGroup.rotation.x = 0.45;
         break;
 
       case 'ATTACK': {
@@ -115,7 +109,7 @@ export const wukongModule: CharacterModule = {
         // Bayangan Awan: Vault backflip off staff
         const p = Math.min(1, t / 0.55);
         torsoGroup.position.y = 1.0 + Math.sin(p * Math.PI) * 0.6;
-        root.rotation.x = -p * Math.PI * 2; // Full backflip
+        torsoGroup.rotation.x = -p * Math.PI * 2; // Full backflip along local sagittal axis
         break;
       }
 
@@ -137,7 +131,7 @@ export const wukongModule: CharacterModule = {
 
       case 'HIT':
         torsoGroup.position.y = 0.95;
-        root.rotation.z = facing * 0.35;
+        torsoGroup.rotation.x = -0.28;
         break;
     }
   }

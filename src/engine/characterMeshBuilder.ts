@@ -155,7 +155,44 @@ export function createArticulatedCharacterRig(charId: CharacterId): ArticulatedC
 
   // Procedural Animation System delegated to character module
   const updateAnimation = (state: AnimationState, stateTimer: number, facing: number) => {
+    // 1. Strict Upright Posture: Reset root rotation angles on X and Z
+    // Prevents character models from ever leaning, tilting sideways, or getting stuck at awkward slants
+    root.rotation.x = 0;
+    root.rotation.z = 0;
+
+    // 2. Consistent fighting game orientation facing the opponent (or facing camera on pedestal)
+    const targetFacingY = facing === 0 ? 0 : facing > 0 ? Math.PI * 0.42 : -Math.PI * 0.42;
+    root.rotation.y = targetFacingY;
+
+    // 3. Reset all articulated rig components to clean neutral pose baseline before applying animation
+    torsoGroup.position.set(0, 1.0, 0);
+    torsoGroup.rotation.set(0, 0, 0);
+
+    headGroup.position.set(0, 0.55, 0);
+    headGroup.rotation.set(0, 0, 0);
+
+    leftArm.position.set(-0.38, 0.25, 0);
+    leftArm.rotation.set(0, 0, 0);
+
+    rightArm.position.set(0.38, 0.25, 0);
+    rightArm.rotation.set(0, 0, 0);
+
+    leftLeg.position.set(-0.18, -0.35, 0);
+    leftLeg.rotation.set(0, 0, 0);
+
+    rightLeg.position.set(0.18, -0.35, 0);
+    rightLeg.rotation.set(0, 0, 0);
+
+    weapon.rotation.set(0, 0, 0);
+
+    // 4. Delegate animation pose updates to character module
     charModule.animate(rigComponents, state, stateTimer, facing, 0.016);
+
+    // 5. Post-animation safety clamp:
+    // Guarantee root remains 100% upright and never tilted diagonally
+    root.rotation.x = 0;
+    root.rotation.z = 0;
+    root.rotation.y = targetFacingY;
   };
 
   const dispose = () => {

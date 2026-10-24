@@ -74,12 +74,7 @@ export const susanooModule: CharacterModule = {
   },
 
   animate(components, state, stateTimer, facing, dt) {
-    const { root, torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg } = components;
-    if (facing !== 0) {
-      root.rotation.y = facing === 1 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-      root.rotation.y = 0;
-    }
+    const { torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg } = components;
     const t = stateTimer;
 
     switch (state) {
@@ -90,7 +85,6 @@ export const susanooModule: CharacterModule = {
         rightArm.rotation.x = -0.3 + Math.sin(t * 3.5) * 0.03;
         leftLeg.rotation.x = 0;
         rightLeg.rotation.x = 0;
-        root.rotation.z = 0;
         break;
 
       case 'WALK': {
@@ -100,13 +94,12 @@ export const susanooModule: CharacterModule = {
         rightLeg.rotation.x = -cycle * 0.6;
         leftArm.rotation.x = -cycle * 0.4;
         rightArm.rotation.x = -0.3 + cycle * 0.3;
-        root.rotation.z = 0;
         break;
       }
 
       case 'DASH':
         torsoGroup.position.y = 0.82;
-        root.rotation.z = -facing * 0.52; // Very low forward ninja sprint
+        torsoGroup.rotation.x = 0.42; // Very low forward ninja sprint
         leftArm.rotation.x = 1.1;
         rightArm.rotation.x = 1.1; // Both arms trailing behind
         break;
@@ -140,8 +133,7 @@ export const susanooModule: CharacterModule = {
         // Tarian Seribu Badai: 4-step zig-zag lightning slashes
         const step = Math.floor(t * 8) % 4;
         torsoGroup.position.y = 0.9 + (step % 2) * 0.3;
-        const baseFacingRot = facing !== 0 ? (facing === 1 ? Math.PI / 2 : -Math.PI / 2) : 0;
-        root.rotation.y = baseFacingRot + Math.sin(t * 20) * 0.4;
+        torsoGroup.rotation.y = Math.sin(t * 20) * 0.4;
         rightArm.rotation.x = -1.8 + Math.cos(t * 24) * 0.8;
         rightArm.rotation.z = Math.sin(t * 24) * 0.8;
         break;
@@ -149,7 +141,7 @@ export const susanooModule: CharacterModule = {
 
       case 'HIT':
         torsoGroup.position.y = 0.95;
-        root.rotation.z = facing * 0.35;
+        torsoGroup.rotation.x = -0.28;
         break;
     }
   }

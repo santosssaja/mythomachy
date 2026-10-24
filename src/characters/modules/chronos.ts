@@ -77,12 +77,7 @@ export const chronosModule: CharacterModule = {
   },
 
   animate(components, state, stateTimer, facing, dt) {
-    const { root, torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, specialGroup } = components;
-    if (facing !== 0) {
-      root.rotation.y = facing === 1 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-      root.rotation.y = 0;
-    }
+    const { torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, specialGroup } = components;
     const t = stateTimer;
 
     // Continuous Astrolabe celestial spin
@@ -97,7 +92,6 @@ export const chronosModule: CharacterModule = {
         torsoGroup.position.y = 1.0 + Math.sin(t * 3.8) * 0.03;
         leftArm.rotation.x = 0.3;
         rightArm.rotation.x = -0.4;
-        root.rotation.z = 0;
         break;
 
       case 'WALK': {
@@ -111,7 +105,7 @@ export const chronosModule: CharacterModule = {
       case 'DASH':
         // Temporal phase warp dash
         torsoGroup.position.y = 0.85;
-        root.rotation.z = -facing * 0.48;
+        torsoGroup.rotation.x = 0.35;
         break;
 
       case 'ATTACK': {
@@ -150,7 +144,7 @@ export const chronosModule: CharacterModule = {
 
       case 'HIT':
         torsoGroup.position.y = 0.95;
-        root.rotation.z = facing * 0.35;
+        torsoGroup.rotation.x = -0.28;
         break;
     }
   }

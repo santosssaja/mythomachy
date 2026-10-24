@@ -71,12 +71,7 @@ export const gatotkacaModule: CharacterModule = {
   },
 
   animate(components, state, stateTimer, facing, dt) {
-    const { root, torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg } = components;
-    if (facing !== 0) {
-      root.rotation.y = facing === 1 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-      root.rotation.y = 0;
-    }
+    const { torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg } = components;
     const t = stateTimer;
 
     switch (state) {
@@ -88,7 +83,6 @@ export const gatotkacaModule: CharacterModule = {
         rightArm.rotation.x = -0.2 - Math.sin(t * 3.0) * 0.05;
         leftLeg.rotation.x = 0;
         rightLeg.rotation.x = 0;
-        root.rotation.z = 0;
         break;
 
       case 'WALK': {
@@ -98,14 +92,13 @@ export const gatotkacaModule: CharacterModule = {
         rightLeg.rotation.x = -cycle * 0.55;
         leftArm.rotation.x = -cycle * 0.45;
         rightArm.rotation.x = cycle * 0.45;
-        root.rotation.z = 0;
         break;
       }
 
       case 'DASH':
         // Low forward charge, flying posture
         torsoGroup.position.y = 0.82;
-        root.rotation.z = -facing * 0.48;
+        torsoGroup.rotation.x = 0.38;
         leftArm.rotation.x = 1.2;
         rightArm.rotation.x = -1.1;
         leftLeg.rotation.x = 0.5;
@@ -161,14 +154,14 @@ export const gatotkacaModule: CharacterModule = {
           leftArm.rotation.x = -1.4;
           rightArm.rotation.x = -1.4;
           headGroup.rotation.x = 0.4;
-          root.rotation.x = 0.2;
+          torsoGroup.rotation.x = 0.25;
         }
         break;
       }
 
       case 'HIT':
         torsoGroup.position.y = 0.95;
-        root.rotation.z = facing * 0.35;
+        torsoGroup.rotation.x = -0.28;
         headGroup.rotation.x = 0.3;
         leftArm.rotation.x = 0.7;
         rightArm.rotation.x = 0.7;

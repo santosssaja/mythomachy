@@ -80,12 +80,7 @@ export const nyirorokidulModule: CharacterModule = {
   },
 
   animate(components, state, stateTimer, facing, dt) {
-    const { root, torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, weapon } = components;
-    if (facing !== 0) {
-      root.rotation.y = facing === 1 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-      root.rotation.y = 0;
-    }
+    const { torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, weapon } = components;
     const t = stateTimer;
 
     // Whip undulating water motion
@@ -99,7 +94,6 @@ export const nyirorokidulModule: CharacterModule = {
         leftArm.rotation.x = 0.3;
         leftArm.rotation.z = 0.2;
         rightArm.rotation.x = -0.3;
-        root.rotation.z = 0;
         break;
 
       case 'WALK': {
@@ -112,7 +106,7 @@ export const nyirorokidulModule: CharacterModule = {
 
       case 'DASH':
         torsoGroup.position.y = 0.9;
-        root.rotation.z = -facing * 0.4;
+        torsoGroup.rotation.x = 0.35;
         break;
 
       case 'ATTACK': {
@@ -151,7 +145,7 @@ export const nyirorokidulModule: CharacterModule = {
 
       case 'HIT':
         torsoGroup.position.y = 0.95;
-        root.rotation.z = facing * 0.35;
+        torsoGroup.rotation.x = -0.28;
         break;
     }
   }

@@ -81,12 +81,7 @@ export const gilgameshModule: CharacterModule = {
   },
 
   animate(components, state, stateTimer, facing, dt) {
-    const { root, torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, specialGroup } = components;
-    if (facing !== 0) {
-      root.rotation.y = facing === 1 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-      root.rotation.y = 0;
-    }
+    const { torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, specialGroup } = components;
     const t = stateTimer;
 
     // Gate of Babylon subtle idle ripple rotation
@@ -102,7 +97,6 @@ export const gilgameshModule: CharacterModule = {
         leftArm.rotation.x = 0.5; // Hand on hip
         leftArm.rotation.z = 0.3;
         rightArm.rotation.x = -0.3;
-        root.rotation.z = 0;
         break;
 
       case 'WALK': {
@@ -115,7 +109,7 @@ export const gilgameshModule: CharacterModule = {
 
       case 'DASH':
         torsoGroup.position.y = 0.88;
-        root.rotation.z = -facing * 0.42;
+        torsoGroup.rotation.x = 0.35;
         break;
 
       case 'ATTACK': {
@@ -156,7 +150,7 @@ export const gilgameshModule: CharacterModule = {
 
       case 'HIT':
         torsoGroup.position.y = 0.95;
-        root.rotation.z = facing * 0.35;
+        torsoGroup.rotation.x = -0.28;
         break;
     }
   }

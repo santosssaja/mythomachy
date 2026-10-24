@@ -90,12 +90,7 @@ export const garudaModule: CharacterModule = {
   },
 
   animate(components, state, stateTimer, facing, dt) {
-    const { root, torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, leftWing, rightWing } = components;
-    if (facing !== 0) {
-      root.rotation.y = facing === 1 ? Math.PI / 2 : -Math.PI / 2;
-    } else {
-      root.rotation.y = 0;
-    }
+    const { torsoGroup, headGroup, leftArm, rightArm, leftLeg, rightLeg, leftWing, rightWing } = components;
     const t = stateTimer;
 
     // Wing flapping animation
@@ -115,7 +110,6 @@ export const garudaModule: CharacterModule = {
         torsoGroup.position.y = 1.08 + Math.sin(t * 3.5) * 0.04;
         leftArm.rotation.x = 0.3;
         rightArm.rotation.x = -0.3;
-        root.rotation.z = 0;
         break;
 
       case 'WALK': {
@@ -129,7 +123,7 @@ export const garudaModule: CharacterModule = {
       case 'DASH':
         // Full aerodynamic flight dash
         torsoGroup.position.y = 0.9;
-        root.rotation.z = -facing * 0.55;
+        torsoGroup.rotation.x = 0.38;
         leftArm.rotation.x = 1.2;
         rightArm.rotation.x = -1.2;
         break;
@@ -163,7 +157,7 @@ export const garudaModule: CharacterModule = {
           headGroup.rotation.x = -0.5;
         } else {
           torsoGroup.position.y = 0.6;
-          root.rotation.x = 0.4;
+          torsoGroup.rotation.x = 0.4;
           rightArm.rotation.x = -2.0;
         }
         break;
@@ -171,7 +165,7 @@ export const garudaModule: CharacterModule = {
 
       case 'HIT':
         torsoGroup.position.y = 0.95;
-        root.rotation.z = facing * 0.35;
+        torsoGroup.rotation.x = -0.28;
         break;
     }
   }

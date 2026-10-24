@@ -318,6 +318,54 @@ class SoundEngine {
     osc.start(t);
     osc.stop(t + 0.04);
   }
+
+  // Character signature select sound
+  public playCharacterSelectSound(charId: string) {
+    if (this.isMuted) return;
+    this.initContext();
+    if (charId === 'thor') {
+      this.playThunderSound();
+    } else if (charId === 'nyirorokidul') {
+      this.playOceanWaveSound();
+    } else if (charId === 'susanoo' || charId === 'athena') {
+      this.playSlashSound();
+    } else if (charId === 'gatotkaca') {
+      this.playHitSound(true);
+    } else if (charId === 'garuda' || charId === 'quetzalcoatl') {
+      this.playDashSound();
+    } else if (charId === 'gilgamesh' || charId === 'chronos') {
+      this.playGachaSummonChimes(true);
+    } else {
+      this.playHitSound(false);
+    }
+  }
+
+  // Match gong / horn when match starts
+  public playMatchStartSound() {
+    if (this.isMuted) return;
+    this.initContext();
+    if (!this.ctx || !this.masterGain) return;
+
+    const t = this.ctx.currentTime;
+    // Deep brass/horn triad
+    [110, 164.81, 220].forEach((f, idx) => {
+      if (!this.ctx || !this.masterGain) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(f, t);
+      osc.frequency.exponentialRampToValueAtTime(f * 0.95, t + 1.2);
+
+      gain.gain.setValueAtTime(0.35, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+
+      osc.start(t);
+      osc.stop(t + 1.2);
+    });
+  }
 }
 
 export const soundEngine = new SoundEngine();

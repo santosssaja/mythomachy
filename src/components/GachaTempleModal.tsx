@@ -217,16 +217,27 @@ export const GachaTempleModal: React.FC<GachaTempleModalProps> = ({
 
           {/* Summon Animation / Result Stage */}
           {animationPhase === 'charging' && (
-            <div className="py-8 flex flex-col items-center justify-center text-center space-y-3 bg-[#6E56CF]/10 rounded-xl border border-[#6E56CF]/40 animate-pulse">
-              <div className="w-16 h-16 rounded-full border-4 border-[#D4AF37] border-t-transparent animate-spin flex items-center justify-center">
-                <IconTemple size={28} color="#D4AF37" />
+            <div className="py-10 flex flex-col items-center justify-center text-center space-y-4 bg-gradient-to-b from-[#6E56CF]/15 to-[#0B0A0F] rounded-2xl border border-[#D4AF37]/50 shadow-2xl animate-pulse">
+              <div className="relative flex items-center justify-center">
+                <svg className="w-32 h-32 animate-summon-circle text-[#D4AF37]" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="6 4" />
+                  <circle cx="50" cy="50" r="38" fill="none" stroke="#6E56CF" strokeWidth="1.2" />
+                  <polygon points="50,14 81,68 19,68" fill="none" stroke="currentColor" strokeWidth="1.2" />
+                  <polygon points="50,86 81,32 19,32" fill="none" stroke="currentColor" strokeWidth="1.2" />
+                  <circle cx="50" cy="50" r="14" fill="none" stroke="#D4AF37" strokeWidth="1.5" />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <IconTemple size={36} color="#D4AF37" />
+                </div>
               </div>
-              <p className="font-cinzel text-sm font-bold text-[#D4AF37] tracking-wider uppercase">
-                Membuka Gerbang Dimensi Purba...
-              </p>
-              <span className="text-xs text-[#9E98B0]">
-                Menyelaraskan energi relik kecepatan kilat (&lt;600ms)
-              </span>
+              <div className="space-y-1">
+                <p className="font-cinzel text-base font-black text-[#D4AF37] tracking-wider uppercase">
+                  Membuka Gerbang Dimensi Purba...
+                </p>
+                <span className="text-xs text-[#9E98B0]">
+                  Menyelaraskan resonansi energi relik kecepatan kilat (&lt;600ms)
+                </span>
+              </div>
             </div>
           )}
 

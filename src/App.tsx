@@ -9,6 +9,8 @@ import {
   RoomInfo
 } from './types/game';
 import { getStoredPlayerProfile } from './services/burnerSigner';
+import { CHARACTERS } from './config/characters';
+import { MAPS } from './config/maps';
 import { soundEngine } from './audio/soundEngine';
 import { Header } from './components/Header';
 import { JudgeVerificationBar } from './components/JudgeVerificationBar';
@@ -19,6 +21,9 @@ import { GachaTempleModal } from './components/GachaTempleModal';
 import { SettingsModal } from './components/SettingsModal';
 import { HelpModal, HelpSectionId } from './components/HelpModal';
 import { ArenaView } from './components/ArenaView';
+import { IconSwords, IconBot, IconUser, IconTemple } from './components/SvgIcons';
+
+export type LobbyTab = 'mode' | 'character' | 'map';
 
 export const App: React.FC = () => {
   // CRITICAL RULE: demoMode MUST initialize to false (OFF) by default
@@ -26,6 +31,9 @@ export const App: React.FC = () => {
 
   // View state: 'lobby' or 'match'
   const [currentView, setCurrentView] = useState<'lobby' | 'match'>('lobby');
+
+  // Lobby flow step tab: 'mode' | 'character' | 'map'
+  const [activeTab, setActiveTab] = useState<LobbyTab>('mode');
 
   // Game configuration
   const [viewMode, setViewMode] = useState<ViewMode>('3D');
@@ -63,6 +71,7 @@ export const App: React.FC = () => {
         isPrivate: true,
         isReady: true
       });
+      setActiveTab('mode');
     }
   }, []);
 
@@ -125,8 +134,11 @@ export const App: React.FC = () => {
     setCurrentView('match');
   };
 
+  const selectedChar = CHARACTERS[selectedCharId];
+  const selectedMap = MAPS[selectedMapId];
+
   return (
-    <div className={`min-h-screen bg-[#0B0A0F] text-[#F4F2F7] flex flex-col ${demoMode ? 'pb-20' : 'pb-8'}`}>
+    <div className={`min-h-screen bg-[#0B0A0F] text-[#F4F2F7] flex flex-col ${demoMode ? 'pb-24' : 'pb-10'}`}>
       {/* Top Header & Settings Bar */}
       <Header
         demoMode={demoMode}
@@ -141,39 +153,178 @@ export const App: React.FC = () => {
       />
 
       {/* Main Game Screen */}
-      <main className="max-w-7xl mx-auto w-full px-4 pt-6 flex-grow flex flex-col">
+      <main className="max-w-7xl mx-auto w-full px-4 pt-5 flex-grow flex flex-col">
         {currentView === 'lobby' ? (
-          <div className="space-y-8 animate-fade-in pb-10">
-            {/* 1. Lobby Waiting Room & Matchmaking */}
-            <LobbyView
-              selectedMapId={selectedMapId}
-              selectedCharId={selectedCharId}
-              demoMode={demoMode}
-              onStartMatchVsBot={handleStartBotMatch}
-              onStartMatchVsPlayer={handleStartPlayerMatch}
-              onOpenHelp={() => setHelpSection('ruang_tunggu')}
-            />
+          <div className="space-y-6 animate-fade-in pb-12">
+            {/* Step Navigation Flow Bar */}
+            <div className="panel-frame p-3 sm:p-4 rounded-2xl border gold-border flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => {
+                    soundEngine.playClickSound();
+                    setActiveTab('mode');
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-cinzel transition-all ${
+                    activeTab === 'mode'
+                      ? 'btn-primary shadow-lg shadow-[#6E56CF]/40 text-white'
+                      : 'bg-[#14121D] border border-[#2D2842] text-[#9E98B0] hover:text-[#F4F2F7] hover:border-[#6E56CF]/40'
+                  }`}
+                >
+                  <span className="w-4 h-4 rounded-full bg-white/20 text-[10px] flex items-center justify-center font-sans">
+                    1
+                  </span>
+                  <span>Mode Laga</span>
+                </button>
 
-            {/* 2. Character Selection View */}
-            <div className="panel-frame p-6 sm:p-8 rounded-2xl border gold-border">
-              <CharacterSelectView
-                selectedId={selectedCharId}
-                onSelectCharacter={setSelectedCharId}
-                playerProfile={playerProfile}
-                demoMode={demoMode}
-                onOpenGacha={() => setIsGachaOpen(true)}
-                onOpenHelp={() => setHelpSection('pemilihan_karakter')}
-              />
+                <button
+                  onClick={() => {
+                    soundEngine.playClickSound();
+                    setActiveTab('character');
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-cinzel transition-all ${
+                    activeTab === 'character'
+                      ? 'btn-primary shadow-lg shadow-[#6E56CF]/40 text-white'
+                      : 'bg-[#14121D] border border-[#2D2842] text-[#9E98B0] hover:text-[#F4F2F7] hover:border-[#6E56CF]/40'
+                  }`}
+                >
+                  <span className="w-4 h-4 rounded-full bg-white/20 text-[10px] flex items-center justify-center font-sans">
+                    2
+                  </span>
+                  <span>Pilih Petarung ({selectedChar.name})</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    soundEngine.playClickSound();
+                    setActiveTab('map');
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-cinzel transition-all ${
+                    activeTab === 'map'
+                      ? 'btn-primary shadow-lg shadow-[#6E56CF]/40 text-white'
+                      : 'bg-[#14121D] border border-[#2D2842] text-[#9E98B0] hover:text-[#F4F2F7] hover:border-[#6E56CF]/40'
+                  }`}
+                >
+                  <span className="w-4 h-4 rounded-full bg-white/20 text-[10px] flex items-center justify-center font-sans">
+                    3
+                  </span>
+                  <span>Pilih Medan ({selectedMap.name})</span>
+                </button>
+              </div>
+
+              {/* Quick Gacha Trigger */}
+              <button
+                onClick={() => {
+                  soundEngine.playClickSound();
+                  setIsGachaOpen(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#D4AF37]/15 border border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37]/25 transition-all text-xs font-bold font-cinzel shadow-sm"
+              >
+                <IconTemple size={16} color="#D4AF37" />
+                <span>Kuil Pemanggilan Gacha</span>
+              </button>
             </div>
 
-            {/* 3. Map Selection View */}
-            <div className="panel-frame p-6 sm:p-8 rounded-2xl border gold-border">
-              <MapSelectView
-                selectedMapId={selectedMapId}
-                onSelectMap={setSelectedMapId}
-                onOpenHelp={() => setHelpSection('pemilihan_peta')}
-              />
+            {/* Persistent Battle Readiness Deck */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#14121D] via-[#1F1B2E] to-[#14121D] border border-[#D4AF37]/40 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-4 text-left">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl bg-[#6E56CF]/25 border border-[#6E56CF]/50 flex items-center justify-center text-[#D4AF37]">
+                    <IconSwords size={22} color="#D4AF37" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-[#9E98B0] font-semibold block">
+                      Petarung Dipilih:
+                    </span>
+                    <span className="font-cinzel font-black text-sm sm:text-base text-[#F4F2F7]">
+                      {selectedChar.name} ({selectedChar.origin})
+                    </span>
+                  </div>
+                </div>
+
+                <div className="hidden sm:block h-8 w-px bg-[#2D2842]" />
+
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-[#9E98B0] font-semibold block">
+                    Medan Laga:
+                  </span>
+                  <span className="font-cinzel font-bold text-xs sm:text-sm text-[#D4AF37]">
+                    {selectedMap.name}
+                  </span>
+                </div>
+
+                <div className="hidden sm:block h-8 w-px bg-[#2D2842]" />
+
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-[#9E98B0] font-semibold block">
+                    Mode Pertandingan:
+                  </span>
+                  <span className="text-xs sm:text-sm font-semibold text-[#2E9E6B]">
+                    {isBotMatch ? `Bot (${botDifficulty})` : `Lawan Pemain (${currentRoom?.code || 'Acak'})`}
+                  </span>
+                </div>
+              </div>
+
+              {/* 1-Click Launch Button */}
+              <button
+                onClick={() => {
+                  soundEngine.playMatchStartSound();
+                  if (isBotMatch) {
+                    handleStartBotMatch(botDifficulty);
+                  } else {
+                    handleStartPlayerMatch(currentRoom || {
+                      code: 'QUICK8',
+                      hostName: 'Penantang Langsung',
+                      hostAddress: '0x14121d5a7b2139048a123f81e35a92c8192a7702',
+                      mapId: selectedMapId,
+                      isPrivate: false,
+                      isReady: true
+                    });
+                  }
+                }}
+                className="w-full md:w-auto px-8 py-3.5 rounded-xl btn-gold text-xs sm:text-sm font-black font-cinzel shadow-xl shadow-[#D4AF37]/30 whitespace-nowrap"
+              >
+                Masuk Arena Laga Sekarang
+              </button>
             </div>
+
+            {/* Tab 1: Lobby Mode View */}
+            {activeTab === 'mode' && (
+              <div className="animate-fade-in">
+                <LobbyView
+                  selectedMapId={selectedMapId}
+                  selectedCharId={selectedCharId}
+                  demoMode={demoMode}
+                  onStartMatchVsBot={handleStartBotMatch}
+                  onStartMatchVsPlayer={handleStartPlayerMatch}
+                  onOpenHelp={() => setHelpSection('ruang_tunggu')}
+                />
+              </div>
+            )}
+
+            {/* Tab 2: Character Selection View */}
+            {activeTab === 'character' && (
+              <div className="panel-frame p-6 sm:p-8 rounded-2xl border gold-border animate-fade-in">
+                <CharacterSelectView
+                  selectedId={selectedCharId}
+                  onSelectCharacter={setSelectedCharId}
+                  playerProfile={playerProfile}
+                  demoMode={demoMode}
+                  onOpenGacha={() => setIsGachaOpen(true)}
+                  onOpenHelp={() => setHelpSection('pemilihan_karakter')}
+                />
+              </div>
+            )}
+
+            {/* Tab 3: Map Selection View */}
+            {activeTab === 'map' && (
+              <div className="panel-frame p-6 sm:p-8 rounded-2xl border gold-border animate-fade-in">
+                <MapSelectView
+                  selectedMapId={selectedMapId}
+                  onSelectMap={setSelectedMapId}
+                  onOpenHelp={() => setHelpSection('pemilihan_peta')}
+                />
+              </div>
+            )}
           </div>
         ) : (
           /* Match Arena View */

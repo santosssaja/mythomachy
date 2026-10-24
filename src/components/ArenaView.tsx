@@ -117,6 +117,25 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
 
   const [winner, setWinner] = useState<'player1' | 'player2' | null>(null);
   const [damageTexts, setDamageTexts] = useState(combatEffects.getTexts());
+  const [matchIntro, setMatchIntro] = useState<string>('BERSIAP...');
+  const [skillBanner, setSkillBanner] = useState<{ text: string; color: string } | null>(null);
+  const [isShaking, setIsShaking] = useState(false);
+
+  // Trigger match start intro sequence
+  useEffect(() => {
+    const t1 = setTimeout(() => setMatchIntro('LAGA DIMULAI!'), 900);
+    const t2 = setTimeout(() => setMatchIntro(''), 1800);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, []);
+
+  // Screen shake helper
+  const triggerScreenShake = () => {
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 300);
+  };
 
   // Mutable refs for high-frequency physics update loop
   const p1Ref = useRef<FighterSimState>(p1State);
@@ -180,6 +199,8 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
           p1.stateTimer = 0;
           p1.attackHitRegistered = false;
           p1.skillCooldownRemaining = p1Char.skill1.cooldown;
+          setSkillBanner({ text: `${p1Char.name}: ${p1Char.skill1.name}`, color: '#00D2D3' });
+          setTimeout(() => setSkillBanner(null), 1400);
           if (p1Char.skill1.dash) {
             p1.vx = p1.facing * p1Char.speed * 2.2;
           }
@@ -192,6 +213,9 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
           p1.attackHitRegistered = false;
           p1.energy = 0;
           p1.ultimateCooldownRemaining = p1Char.ultimate.cooldown;
+          setSkillBanner({ text: `${p1Char.name}: ${p1Char.ultimate.name}!`, color: '#D4AF37' });
+          triggerScreenShake();
+          setTimeout(() => setSkillBanner(null), 2000);
         }
       } else if (key === 'w' || key === 'arrowup') {
         // Jump
@@ -267,11 +291,13 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
         const hitP1toP2 = processCombatHits(p1, p2);
         if (hitP1toP2) {
           combatEffects.addDamageText(hitP1toP2.x, hitP1toP2.y, hitP1toP2.damage, hitP1toP2.blocked);
+          if (hitP1toP2.damage > 90) triggerScreenShake();
         }
 
         const hitP2toP1 = processCombatHits(p2, p1);
         if (hitP2toP1) {
           combatEffects.addDamageText(hitP2toP1.x, hitP2toP1.y, hitP2toP1.damage, hitP2toP1.blocked);
+          if (hitP2toP1.damage > 90) triggerScreenShake();
         }
 
         // 6. Check Win Condition
@@ -352,6 +378,8 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
         p1.stateTimer = 0;
         p1.attackHitRegistered = false;
         p1.skillCooldownRemaining = p1Char.skill1.cooldown;
+        setSkillBanner({ text: `${p1Char.name}: ${p1Char.skill1.name}`, color: '#00D2D3' });
+        setTimeout(() => setSkillBanner(null), 1400);
         if (p1Char.skill1.dash) {
           p1.vx = p1.facing * p1Char.speed * 2.2;
         }
@@ -363,6 +391,9 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
         p1.attackHitRegistered = false;
         p1.energy = 0;
         p1.ultimateCooldownRemaining = p1Char.ultimate.cooldown;
+        setSkillBanner({ text: `${p1Char.name}: ${p1Char.ultimate.name}!`, color: '#D4AF37' });
+        triggerScreenShake();
+        setTimeout(() => setSkillBanner(null), 2000);
       }
     } else if (action === 'BLOCK') {
       p1.isBlocking = !p1.isBlocking;
@@ -370,9 +401,35 @@ export const ArenaView: React.FC<ArenaViewProps> = ({
   };
 
   return (
-    <div className="relative w-full h-[82vh] min-h-[550px] bg-[#0B0A0F] rounded-2xl overflow-hidden border border-[#2D2842] shadow-2xl">
+    <div className={`relative w-full h-[82vh] min-h-[550px] bg-[#0B0A0F] rounded-2xl overflow-hidden border border-[#2D2842] shadow-2xl ${isShaking ? 'shake-screen' : ''}`}>
       {/* Three.js Canvas Container */}
       <div ref={containerRef} className="w-full h-full" />
+
+      {/* Match Intro Banner */}
+      {matchIntro && (
+        <div className="absolute inset-0 z-30 pointer-events-none flex items-center justify-center bg-black/40 backdrop-blur-xs">
+          <div className="text-center animate-scale-up">
+            <span className="text-xs uppercase font-bold tracking-widest text-[#D4AF37] block font-cinzel">
+              Ronde 1
+            </span>
+            <h2 className="text-3xl sm:text-5xl font-black font-cinzel tracking-wider text-[#F4F2F7] drop-shadow-[0_4px_16px_rgba(212,175,55,0.6)]">
+              {matchIntro}
+            </h2>
+          </div>
+        </div>
+      )}
+
+      {/* Skill Cast Announcement Banner */}
+      {skillBanner && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none animate-slide-down">
+          <div className="px-5 py-2 rounded-xl bg-[#0B0A0F]/90 border border-[#D4AF37] shadow-xl shadow-[#D4AF37]/20 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-ping" />
+            <span className="font-cinzel font-black text-xs sm:text-sm tracking-wider uppercase text-[#F4F2F7]">
+              {skillBanner.text}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Floating Damage Text Overlay */}
       <div className="absolute inset-0 pointer-events-none z-20">

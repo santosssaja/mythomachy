@@ -1206,12 +1206,22 @@ export const AuditView: React.FC<AuditViewProps> = ({
             className="card-surface border border-[#2D2842] bg-[#07060A] rounded-2xl shadow-2xl"
             style={{ padding: '20px 24px' }}
           >
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#2D2842] text-xs">
+            <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#2D2842] text-xs flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <IconTerminal size={16} color="#D4AF37" />
                 <span className="font-mono font-bold text-[#D4AF37]">monad-telemetry@mythomachy:~$ log --live</span>
               </div>
               <div className="flex items-center gap-3">
+                <a
+                  href={`${MONAD_CONFIG.explorerUrl}/address/${currentContract}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[10px] text-[#9D88F5] hover:text-white flex items-center gap-1 font-mono hover:underline cursor-pointer"
+                  title="Buka Tab Riwayat Log & Transaksi Kontrak di Monad Explorer"
+                >
+                  <span>Lihat Seluruh Log di Explorer</span>
+                  <IconExternalLink size={10} />
+                </a>
                 <span className="text-[10px] text-[#9E98B0] font-mono">
                   {logs.length} entri riwayat
                 </span>

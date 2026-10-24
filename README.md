@@ -144,7 +144,7 @@ Judges and developers can reproduce and run Mythomachy locally from scratch with
 
 ### Step 1: Clone Repository & Install Dependencies
 ```bash
-git clone [INSERT_PUBLIC_GITHUB_REPO_URL_HERE]
+git clone https://github.com/santosssaja/mythomachy
 cd Mythomachy
 npm install
 ```
